@@ -3,7 +3,7 @@ Title: Identify Varieties in Danger of Loss
 Version: 0.0.0.9000
 Authors@R: 
     person("Piero", "Palacios", , "piero.palacios@cgiar.org", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0001-6729-4080"))
 Description: Functions to calculate overall cultivar freqeucny, relative cultivar frequency and plot the relation between these two.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -14,3 +14,6 @@ Imports:
     magrittr,
     purrr,
     stats
+Depends: 
+    R (>= 2.10)
+LazyData: true

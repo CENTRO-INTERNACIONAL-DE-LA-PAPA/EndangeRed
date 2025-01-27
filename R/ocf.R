@@ -11,6 +11,12 @@
 #' @export
 #'
 #' @examples
+#' #' data(varieties_data)
+#' ocf_data <- OCF(dfr=varieties_data,
+#' vname="variety_name",
+#' hh="household_code",
+#' community="community",
+#' location="location")
 
 OCF <- function(dfr, vname, hh, community, location,quantiles=c(0.25,0.5,0.75)){
     if (inherits(dfr, "tibble")) {
@@ -48,26 +54,30 @@ OCF <- function(dfr, vname, hh, community, location,quantiles=c(0.25,0.5,0.75)){
 }
 
 
-#' Calculate cumulative cutlivar frequency
+#' Calculate cumulative cultivar frequency
 #'
 #' @param dfr A data frame
 #' @param vname variety names
 #' @param hh household names or codes
 #' @param community community
 #' @param location location
+#' @param pctn Boolean whether calculate percentages
 #'
 #' @returns A data frame with the CCf values
 #' @export
 #'
 #' @examples
-CCF <- function(dfr,
-                 vname,
-                 hh,
-                 community,
-                 location){
+#' data(varieties_data)
+#' ccf_data <- CCF(dfr=varieties_data,
+#' vname="variety_name",
+#' hh="household_code",
+#' community="community",
+#' location="location")
+CCF <- function(dfr, vname, hh, community, location, pctn = TRUE){
     if (inherits(dfr, "tibble")) {
         dfr <- as.data.frame(dfr, stringsAsFactors = FALSE)
     }
+    ncut <- NULL
     index_varname <- which(names(dfr) == vname)
     names(dfr)[index_varname] <- "variety_name"
     index_varname <- which(names(dfr) == hh)
@@ -76,26 +86,16 @@ CCF <- function(dfr,
     names(dfr)[index_varname] <- "community"
     index_varname <- which(names(dfr) == location)
     names(dfr)[index_varname] <- "location"
-    dfr_ccf <- CCF(dfr, "variety_name", "hh", "community", "location")
-    ncom <- length(unique(dfr[, "community"] %>% purrr::as_vector()))
-    dfr_ccf <- dfr_ccf %>%
-        dplyr::group_by(variety_name) %>%
-        dplyr::mutate(sumccf = sum(ccf, na.rm = TRUE)) %>%
+    smry_codefarmer <- dfr %>%
+        dplyr::group_by(community) %>%
+        dplyr::summarise(nhh = dplyr::n_distinct(hh))
+    smry_ntotalhhcomu <- dfr %>%
+        dplyr::group_by(community, variety_name) %>%
+        dplyr::summarize(nhhxvarie = dplyr::n_distinct(hh))
+    out <- dplyr::left_join(smry_codefarmer, smry_ntotalhhcomu, by = c("community"))
+    out <- out %>%
+        dplyr::mutate(ccf = (nhhxvarie/nhh) * 100) %>%
         dplyr::ungroup()
-    dfr_ocf <- dfr_ccf %>%
-        dplyr::mutate(OCF = sumccf / ncom)
-    dfr_ocf <- dfr_ocf %>%
-        dplyr::mutate(
-        OCF_scale = dplyr::case_when(
-            OCF <
-                1 ~ "very few households",
-            OCF < 5 & OCF >= 1 ~ "few households",
-            OCF < 25 &
-                OCF >= 5 ~ "many households",
-            OCF > 25 ~ "most households",
-        )
-    )
-    return(dfr_ocf)
 }
 
-ccf <- sumccf <- variety_name <- quantile <- NULL
+ccf <- sumccf <- variety_name <- quantile <- nhh <- nhhxvarie <- NULL

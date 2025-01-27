@@ -2,5 +2,7 @@
 
 export("%>%")
 export(CCF)
+export(HCF)
 export(OCF)
+export(RCF)
 importFrom(magrittr,"%>%")

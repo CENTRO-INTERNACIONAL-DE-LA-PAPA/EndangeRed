@@ -2,9 +2,9 @@
 % Please edit documentation in R/ocf.R
 \name{CCF}
 \alias{CCF}
-\title{Calculate cumulative cutlivar frequency}
+\title{Calculate cumulative cultivar frequency}
 \usage{
-CCF(dfr, vname, hh, community, location)
+CCF(dfr, vname, hh, community, location, pctn = TRUE)
 }
 \arguments{
 \item{dfr}{A data frame}
@@ -16,10 +16,20 @@ CCF(dfr, vname, hh, community, location)
 \item{community}{community}
 
 \item{location}{location}
+
+\item{pctn}{Boolean whether calculate percentages}
 }
 \value{
 A data frame with the CCf values
 }
 \description{
-Calculate cumulative cutlivar frequency
+Calculate cumulative cultivar frequency
+}
+\examples{
+data(varieties_data)
+ccf_data <- CCF(dfr=varieties_data,
+vname="variety_name",
+hh="household_code",
+community="community",
+location="location")
 }
