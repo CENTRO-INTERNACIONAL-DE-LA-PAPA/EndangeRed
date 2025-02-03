@@ -30,7 +30,9 @@ remotes::install_github("https://github.com/CENTRO-INTERNACIONAL-DE-LA-PAPA/Enda
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to get the Red Listing of varieties.
+
+First, we need to calculate the Overall Cultivar Frequency (OCF) and Relative Cultivar Frequency (RCF).
 
 ```{r example}
 library(EndangeRed)
@@ -45,6 +47,8 @@ ocf_data <- OCF(
     location = "location"
 )
 
+print(head(ocf_data))
+
 rcf_data <- RCF(
     dfr = varieties_data,
     vname = "variety_name",
@@ -55,9 +59,20 @@ rcf_data <- RCF(
     location = "location"
 )
 
+print(head(rcf_data))
+
+```
+
+Now, we can plot the OCF and RCF values:
+
+```{r, message=FALSE}
+
 Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
 
 ```
+
+
+If we need to get the varieties inside each quadrant we can do it by using the function `Get_Red_Listing`.
 
 ```{r}
 

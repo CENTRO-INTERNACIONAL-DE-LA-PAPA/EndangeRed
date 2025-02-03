@@ -18,7 +18,11 @@ remotes::install_github("https://github.com/CENTRO-INTERNACIONAL-DE-LA-PAPA/Enda
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to get the Red Listing of
+varieties.
+
+First, we need to calculate the Overall Cultivar Frequency (OCF) and
+Relative Cultivar Frequency (RCF).
 
 ``` r
 library(EndangeRed)
@@ -33,6 +37,17 @@ ocf_data <- OCF(
     location = "location"
 )
 
+print(head(ocf_data))
+#> # A tibble: 6 × 7
+#>   community       nhh variety_name nhhxvarie   ccf sumccf   OCF
+#>   <chr>         <int> <chr>            <int> <dbl>  <dbl> <dbl>
+#> 1 Chaccllabamba    41 variety_10           1  2.44   5.56 1.39 
+#> 2 Chaccllabamba    41 variety_106          1  2.44   2.44 0.610
+#> 3 Chaccllabamba    41 variety_11           2  4.88  23.8  5.95 
+#> 4 Chaccllabamba    41 variety_112          1  2.44   7.70 1.93 
+#> 5 Chaccllabamba    41 variety_117          1  2.44   2.44 0.610
+#> 6 Chaccllabamba    41 variety_118          1  2.44   2.44 0.610
+
 rcf_data <- RCF(
     dfr = varieties_data,
     vname = "variety_name",
@@ -43,11 +58,29 @@ rcf_data <- RCF(
     location = "location"
 )
 
-Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
-#> `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+print(head(rcf_data))
+#> # A tibble: 6 × 8
+#>   variety_name hh       community location nsvarie totalhcfxvarie total_hh   RCF
+#>   <chr>        <chr>    <chr>     <chr>      <dbl>          <dbl>    <int> <dbl>
+#> 1 variety_10   Farmer_… Cochacoc… Challab…     115          0.552       73 0.757
+#> 2 variety_149  Farmer_… Chacclla… Challab…     126          1.62        73 2.22 
+#> 3 variety_104  Farmer_… Umana     Paucart…      56          2.27        27 8.40 
+#> 4 variety_69   Farmer_… Umana     Paucart…     138          1           27 3.70 
+#> 5 variety_111  Farmer_… Cochacoc… Challab…     192          0.188       73 0.257
+#> 6 variety_448  Farmer_… Umana     Paucart…     171          0.274       27 1.01
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+Now, we can plot the OCF and RCF values:
+
+``` r
+
+Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+If we need to get the varieties inside each quadrant we can do it by
+using the function `Get_Red_Listing`.
 
 ``` r
 
