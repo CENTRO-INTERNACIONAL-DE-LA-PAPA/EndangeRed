@@ -63,7 +63,15 @@ print(head(rcf_data))
 
 ```
 
-Now, we can plot the OCF and RCF values:
+Now, we can plot the OCF and RCF values in normal scale:
+
+```{r, message=FALSE}
+
+Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "normal")
+
+```
+
+Or in log scale:
 
 ```{r, message=FALSE}
 

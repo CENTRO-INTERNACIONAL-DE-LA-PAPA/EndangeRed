@@ -70,14 +70,23 @@ print(head(rcf_data))
 #> 6 variety_448  Farmer_… Umana     Paucart…     171          0.274       27 1.01
 ```
 
-Now, we can plot the OCF and RCF values:
+Now, we can plot the OCF and RCF values in normal scale:
+
+``` r
+
+Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "normal")
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+Or in log scale:
 
 ``` r
 
 Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 If we need to get the varieties inside each quadrant we can do it by
 using the function `Get_Red_Listing`.
