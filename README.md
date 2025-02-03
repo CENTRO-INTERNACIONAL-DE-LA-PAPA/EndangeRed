@@ -93,7 +93,7 @@ using the function `Get_Red_Listing`.
 
 ``` r
 
-combined_scales <- Get_Red_Listing(ocf_data, rcf_data)
+combined_scales <- Get_Red_Listing(ocf_data, rcf_data,type = "log")
 
 print(combined_scales)
 #> # A tibble: 14 × 3

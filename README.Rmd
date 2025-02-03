@@ -84,7 +84,7 @@ If we need to get the varieties inside each quadrant we can do it by using the f
 
 ```{r}
 
-combined_scales <- Get_Red_Listing(ocf_data, rcf_data)
+combined_scales <- Get_Red_Listing(ocf_data, rcf_data,type = "log")
 
 print(combined_scales)
 
