@@ -32,7 +32,6 @@ Plot_Variable_Red_Listing <- function(OCF_df,
     if(type == "normal"){
 
         quantiles_OCF <- OCF_df %>%
-            dplyr::group_by(community) %>%
             dplyr::summarize(
                 Q1_ocf = quantile(OCF, probs = quantiles[1], na.rm = TRUE),
                 Median_ocf = quantile(OCF, probs = quantiles[2], na.rm = TRUE),
@@ -41,7 +40,6 @@ Plot_Variable_Red_Listing <- function(OCF_df,
             )
 
         quantiles_RCF <- RCF_df %>%
-            dplyr::group_by(community) %>%
             dplyr::summarize(
                 Q1_rcf = quantile(RCF, probs = quantiles[1], na.rm = TRUE),
                 Median_rcf = quantile(RCF, probs = quantiles[2], na.rm = TRUE),
@@ -49,24 +47,18 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 .groups = "drop"
             )
 
-        OCF_df <- OCF_df %>%
-            dplyr::left_join(quantiles_OCF)
-
-        RCF_df <- RCF_df %>%
-            dplyr::left_join(quantiles_RCF)
-
         joined_df <- RCF_df %>%
             dplyr::left_join(OCF_df, by = dplyr::join_by(variety_name,
                                            community))
 
         plt <- ggplot2::ggplot(joined_df, ggplot2::aes(OCF, RCF)) +
             ggplot2::geom_point(colour = "#9386A6FF", size = 2, alpha = 0.5) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_smooth() +
             ggplot2::labs(title = "Scatter Plot with Quantiles") +
             ggplot2::theme_minimal()
@@ -80,16 +72,16 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 axis.text.y = ggplot2::element_blank(),
                 axis.ticks.y = ggplot2::element_blank()
             ) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1)
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1)
 
         # Density plot for RCF (right)
         density_y <- ggplot2::ggplot(joined_df, ggplot2::aes(x = RCF)) +
             ggplot2::geom_density(fill = "#607345FF", alpha = 0.7, bw = 0.1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::scale_y_reverse() +
             ggplot2::coord_flip() +
             ggplot2::theme_minimal() +
@@ -116,7 +108,6 @@ Plot_Variable_Red_Listing <- function(OCF_df,
     } else if(type == "log"){
 
         quantiles_OCF <- OCF_df %>%
-            dplyr::group_by(community) %>%
             dplyr::summarize(
                 Q1_ocf = quantile(log(OCF), probs = quantiles[1], na.rm = TRUE),
                 Median_ocf = quantile(log(OCF), probs = quantiles[2], na.rm = TRUE),
@@ -125,7 +116,6 @@ Plot_Variable_Red_Listing <- function(OCF_df,
             )
 
         quantiles_RCF <- RCF_df %>%
-            dplyr::group_by(community) %>%
             dplyr::summarize(
                 Q1_rcf = quantile(log(RCF), probs = quantiles[1], na.rm = TRUE),
                 Median_rcf = quantile(log(RCF), probs = quantiles[2], na.rm = TRUE),
@@ -133,11 +123,6 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 .groups = "drop"
             )
 
-        OCF_df <- OCF_df %>%
-            dplyr::left_join(quantiles_OCF)
-
-        RCF_df <- RCF_df %>%
-            dplyr::left_join(quantiles_RCF)
 
         joined_df <- RCF_df %>%
             dplyr::left_join(OCF_df, by = dplyr::join_by(variety_name,
@@ -145,12 +130,12 @@ Plot_Variable_Red_Listing <- function(OCF_df,
 
         plt <- ggplot2::ggplot(joined_df, ggplot2::aes(log(OCF), log(RCF))) +
             ggplot2::geom_point(colour = "#9386A6FF", size = 2, alpha = 0.5) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_hline(yintercept = joined_df$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_hline(yintercept = quantiles_RCF$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_smooth() +
             ggplot2::labs(title = "Scatter Plot with Quantiles") +
             ggplot2::theme_minimal()
@@ -164,16 +149,16 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 axis.text.y = ggplot2::element_blank(),
                 axis.ticks.y = ggplot2::element_blank()
             ) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1)
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_OCF$Q3_ocf[1], lty = 2, colour = "red3", linewidth = 1)
 
         # Density plot for RCF (right)
         density_y <- ggplot2::ggplot(joined_df, ggplot2::aes(x = log(RCF))) +
             ggplot2::geom_density(fill = "#607345FF", alpha = 0.7, bw = 0.1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
-            ggplot2::geom_vline(xintercept = joined_df$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
+            ggplot2::geom_vline(xintercept = quantiles_RCF$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::scale_y_reverse() +
             ggplot2::coord_flip() +
             ggplot2::theme_minimal() +

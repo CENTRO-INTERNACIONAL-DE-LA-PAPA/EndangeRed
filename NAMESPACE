@@ -2,6 +2,7 @@
 
 export("%>%")
 export(CCF)
+export(Get_Red_Listing)
 export(HCF)
 export(OCF)
 export(Plot_Variable_Red_Listing)
