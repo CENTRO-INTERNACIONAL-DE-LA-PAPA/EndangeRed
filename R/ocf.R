@@ -5,13 +5,12 @@
 #' @param hh household names or codes
 #' @param community community names
 #' @param location location of the varieties
-#' @param quantiles quantiles to get
 #'
 #' @returns A data frame with OCF percentages and metrics to calculate the OCF
 #' @export
 #'
 #' @examples
-#' #' data(varieties_data)
+#' data(varieties_data)
 #' ocf_data <- OCF(dfr=varieties_data,
 #' vname="variety_name",
 #' hh="household_code",

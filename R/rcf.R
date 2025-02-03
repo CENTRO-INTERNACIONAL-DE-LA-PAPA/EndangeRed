@@ -7,8 +7,6 @@
 #' @param community community
 #' @param location location
 #' @param is_grouped Whether we calculate the RCF by location, default=TRUE
-#' @param quantiles quantiles to get
-#'
 #' @returns A data frame with RCF percentages and metrics to calculate the RCF
 #' @export
 #'
@@ -99,4 +97,5 @@ HCF <- function(dfr, hh, nsvarie, pctn = TRUE){
             dplyr::mutate(HCF_percent = 100 * (nsvarie/tn_hh))
     }
 }
+
 tn_hh <- totalhcfxvarie <- total_hh <- NULL

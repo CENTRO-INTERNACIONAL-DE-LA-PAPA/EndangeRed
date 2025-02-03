@@ -4,16 +4,7 @@
 \alias{RCF}
 \title{Calculate relative cultivar frequency (RCF)}
 \usage{
-RCF(
-  dfr,
-  vname,
-  hh,
-  nsvarie,
-  community,
-  location,
-  is_grouped = TRUE,
-  quantiles = c(0.25, 0.5, 0.75)
-)
+RCF(dfr, vname, hh, nsvarie, community, location, is_grouped = TRUE)
 }
 \arguments{
 \item{dfr}{A data frame}
@@ -29,8 +20,6 @@ RCF(
 \item{location}{location}
 
 \item{is_grouped}{Whether we calculate the RCF by location, default=TRUE}
-
-\item{quantiles}{quantiles to get}
 }
 \value{
 A data frame with RCF percentages and metrics to calculate the RCF

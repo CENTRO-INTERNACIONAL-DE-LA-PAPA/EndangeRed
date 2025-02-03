@@ -4,7 +4,7 @@
 \alias{OCF}
 \title{Calculate overall cultivar frequency (OCF)}
 \usage{
-OCF(dfr, vname, hh, community, location, quantiles = c(0.25, 0.5, 0.75))
+OCF(dfr, vname, hh, community, location)
 }
 \arguments{
 \item{dfr}{A data frame}
@@ -16,8 +16,6 @@ OCF(dfr, vname, hh, community, location, quantiles = c(0.25, 0.5, 0.75))
 \item{community}{community names}
 
 \item{location}{location of the varieties}
-
-\item{quantiles}{quantiles to get}
 }
 \value{
 A data frame with OCF percentages and metrics to calculate the OCF
@@ -26,7 +24,7 @@ A data frame with OCF percentages and metrics to calculate the OCF
 Calculate overall cultivar frequency (OCF)
 }
 \examples{
-#' data(varieties_data)
+data(varieties_data)
 ocf_data <- OCF(dfr=varieties_data,
 vname="variety_name",
 hh="household_code",
