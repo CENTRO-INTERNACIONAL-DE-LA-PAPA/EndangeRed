@@ -18,7 +18,7 @@
 #' community="community",
 #' location="location")
 
-OCF <- function(dfr, vname, hh, community, location,quantiles=c(0.25,0.5,0.75)){
+OCF <- function(dfr, vname, hh, community, location){
     if (inherits(dfr, "tibble")) {
         dfr <- as.data.frame(dfr, stringsAsFactors = FALSE)
     }
@@ -39,16 +39,6 @@ OCF <- function(dfr, vname, hh, community, location,quantiles=c(0.25,0.5,0.75)){
         dplyr::ungroup()
     dfr_ocf <- dfr_ccf %>%
         dplyr::mutate(OCF = sumccf / ncom)
-
-    quantiles <- stats::quantile(dfr_ocf$OCF,probs = quantiles)
-
-    dfr_ocf <- dfr_ocf |>
-        dplyr::mutate(OCF_scale = dplyr::case_when(
-            OCF < quantiles[1] ~ "Very few households",
-            OCF >= quantiles[1] & OCF < quantiles[2] ~ "Few households",
-            OCF >= quantiles[2] & OCF < quantiles[3] ~ "Many households",
-            OCF >= quantiles[3] ~ "most households",
-        ))
 
     return(dfr_ocf)
 }

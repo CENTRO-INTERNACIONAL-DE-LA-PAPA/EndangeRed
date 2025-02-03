@@ -26,11 +26,12 @@ RCF <- function(dfr,
                  nsvarie,
                  community,
                  location,
-                 is_grouped = TRUE,
-                 quantiles=c(0.25,0.5,0.75)) {
+                 is_grouped = TRUE) {
+
     if (inherits(dfr, "tibble")) {
         dfr <- as.data.frame(dfr, stringsAsFactors = FALSE)
     }
+
     names(dfr)[which(names(dfr) == vname)] <- "variety_name"
     names(dfr)[which(names(dfr) == hh)] <- "hh"
     names(dfr)[which(names(dfr) == nsvarie)] <- "nsvarie"
@@ -59,16 +60,6 @@ RCF <- function(dfr,
     dfr <- dplyr::left_join(dfr, smry_conteo_hh_location, by = c("location"))
     dfr_rcf <- dfr %>%
         dplyr::mutate(RCF = 100 * (totalhcfxvarie / total_hh))
-
-    quantiles <- stats::quantile(dfr_rcf$RCF,probs = quantiles)
-
-    dfr_rcf <- dfr_rcf |>
-        dplyr::mutate(RCF_scale = dplyr::case_when(
-            RCF < quantiles[1] ~ "Very few households",
-            RCF >= quantiles[1] & RCF < quantiles[2] ~ "Few households",
-            RCF >= quantiles[2] & RCF < quantiles[3] ~ "Many households",
-            RCF >= quantiles[3] ~ "most households",
-        ))
 
     return(dfr_rcf)
 }
