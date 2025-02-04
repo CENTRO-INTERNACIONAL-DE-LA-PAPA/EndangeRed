@@ -9,7 +9,13 @@
 Functions to calculate overall cultivar frequency, relative cultivar frequency and plot the relation between these two.
 }
 \author{
-\strong{Maintainer}: Piero Palacios \email{piero.palacios@cgiar.org} (\href{https://orcid.org/0000-0001-6729-4080}{ORCID})
+\strong{Maintainer}: Piero Palacios \email{piero.palacios@cgiar.org}
+
+Authors:
+\itemize{
+  \item Henry Juarez \email{h.juarez@cgiar.org}
+  \item Stef De Haan
+}
 
 }
 \keyword{internal}

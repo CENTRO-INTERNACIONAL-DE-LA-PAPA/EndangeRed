@@ -47,11 +47,49 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 .groups = "drop"
             )
 
+        q1_ocf    <- quantiles_OCF$Q1_ocf[1]
+        median_ocf <- quantiles_OCF$Median_ocf[1]
+        q3_ocf <- quantiles_OCF$Q3_ocf[1]
+        q1_rcf    <- quantiles_RCF$Q1_rcf[1]
+        median_rcf <- quantiles_RCF$Median_rcf[1]
+        q3_rcf <- quantiles_RCF$Q3_rcf[1]
+
+
         joined_df <- RCF_df %>%
             dplyr::left_join(OCF_df, by = dplyr::join_by(variety_name,
                                            community))
 
         plt <- ggplot2::ggplot(joined_df, ggplot2::aes(OCF, RCF)) +
+            ggplot2::annotate("rect",
+                xmin = -Inf, xmax = q1_ocf,
+                ymin = -Inf, ymax = q1_rcf,
+                fill = "#FF9C4CFF", alpha = 0.7
+            ) +
+            ggplot2::annotate("rect",
+                xmin = q1_ocf, xmax = median_ocf,
+                ymin = -Inf, ymax = q1_rcf,
+                fill = "#FF9C4CFF", alpha = 0.4
+            ) +
+            ggplot2::annotate("rect",
+                xmin = -Inf, xmax = q1_ocf,
+                ymin = q1_rcf, ymax = median_rcf,
+                fill = "#FF9C4CFF", alpha = 0.4
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = q3_ocf, xmax = Inf,
+                              ymin = q3_rcf, ymax = Inf,
+                              fill = "#8BAC54FF", alpha = 0.6
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = median_ocf, xmax = q3_ocf,
+                              ymin = q3_rcf, ymax = Inf,
+                              fill = "#8BAC54FF", alpha = 0.2
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = q3_ocf, xmax = Inf,
+                              ymin = median_rcf, ymax = q3_rcf,
+                              fill = "#8BAC54FF", alpha = 0.2
+            ) +
             ggplot2::geom_point(colour = "#9386A6FF", size = 2, alpha = 0.5) +
             ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
@@ -123,12 +161,49 @@ Plot_Variable_Red_Listing <- function(OCF_df,
                 .groups = "drop"
             )
 
+        q1_ocf    <- quantiles_OCF$Q1_ocf[1]
+        median_ocf <- quantiles_OCF$Median_ocf[1]
+        q3_ocf <- quantiles_OCF$Q3_ocf[1]
+        q1_rcf    <- quantiles_RCF$Q1_rcf[1]
+        median_rcf <- quantiles_RCF$Median_rcf[1]
+        q3_rcf <- quantiles_RCF$Q3_rcf[1]
+
 
         joined_df <- RCF_df %>%
             dplyr::left_join(OCF_df, by = dplyr::join_by(variety_name,
                                            community))
 
         plt <- ggplot2::ggplot(joined_df, ggplot2::aes(log(OCF), log(RCF))) +
+            ggplot2::annotate("rect",
+                              xmin = -Inf, xmax = q1_ocf,
+                              ymin = -Inf, ymax = q1_rcf,
+                              fill = "#FF9C4CFF", alpha = 0.7
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = q1_ocf, xmax = median_ocf,
+                              ymin = -Inf, ymax = q1_rcf,
+                              fill = "#FF9C4CFF", alpha = 0.4
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = -Inf, xmax = q1_ocf,
+                              ymin = q1_rcf, ymax = median_rcf,
+                              fill = "#FF9C4CFF", alpha = 0.4
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = q3_ocf, xmax = Inf,
+                              ymin = q3_rcf, ymax = Inf,
+                              fill = "#8BAC54FF", alpha = 0.6
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = median_ocf, xmax = q3_ocf,
+                              ymin = q3_rcf, ymax = Inf,
+                              fill = "#8BAC54FF", alpha = 0.2
+            ) +
+            ggplot2::annotate("rect",
+                              xmin = q3_ocf, xmax = Inf,
+                              ymin = median_rcf, ymax = q3_rcf,
+                              fill = "#8BAC54FF", alpha = 0.2
+            ) +
             ggplot2::geom_point(colour = "#9386A6FF", size = 2, alpha = 0.5) +
             ggplot2::geom_vline(xintercept = quantiles_OCF$Q1_ocf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_vline(xintercept = quantiles_OCF$Median_ocf[1], lty = 2, colour = "red3", linewidth = 1) +

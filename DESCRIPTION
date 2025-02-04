@@ -1,9 +1,10 @@
 Package: EndangeRed
 Title: Identify Varieties in Danger of Loss
 Version: 0.0.0.9000
-Authors@R: 
-    person("Piero", "Palacios", , "piero.palacios@cgiar.org", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-6729-4080"))
+Authors@R: c(
+    person("Piero", "Palacios", email = "piero.palacios@cgiar.org", role = "cre"),
+    person("Henry", "Juarez", email = "h.juarez@cgiar.org", role = "aut"),
+    person("Stef","De Haan", role = c("aut")))
 Description: Functions to calculate overall cultivar frequency, relative cultivar frequency and plot the relation between these two.
 License: MIT + file LICENSE
 Encoding: UTF-8
