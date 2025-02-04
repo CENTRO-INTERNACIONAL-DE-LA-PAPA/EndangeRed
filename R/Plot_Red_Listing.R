@@ -217,7 +217,7 @@ Plot_Variable_Red_Listing <- function(OCF_df,
 
         # Density plot for OCF (top)
         density_x <- ggplot2::ggplot(joined_df, ggplot2::aes(x = log(OCF))) +
-            ggplot2::geom_density(fill = "#607345FF", alpha = 0.7) +
+            ggplot2::geom_density(fill = "#C1447EFF", alpha = 0.7) +
             ggplot2::theme_minimal() +
             ggplot2::theme(
                 axis.title.y = ggplot2::element_blank(),
@@ -230,7 +230,7 @@ Plot_Variable_Red_Listing <- function(OCF_df,
 
         # Density plot for RCF (right)
         density_y <- ggplot2::ggplot(joined_df, ggplot2::aes(x = log(RCF))) +
-            ggplot2::geom_density(fill = "#607345FF", alpha = 0.7, bw = 0.1) +
+            ggplot2::geom_density(fill = "#C1447EFF", alpha = 0.7, bw = 0.1) +
             ggplot2::geom_vline(xintercept = quantiles_RCF$Q1_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_vline(xintercept = quantiles_RCF$Median_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
             ggplot2::geom_vline(xintercept = quantiles_RCF$Q3_rcf[1], lty = 2, colour = "red3", linewidth = 1) +
