@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of EndangeRed is to ...
+The goal of EndangeRed is to provide a tool to calculate the Red Listing of varieties based on the Overall Cultivar Frequency (OCF) and Relative Cultivar Frequency (RCF) values.
 
 ## Installation
 
-You can install the development version of EndangeRed like so:
+You can install the development version of EndangeRed like this:
 
 ``` r
 remotes::install_github("https://github.com/CENTRO-INTERNACIONAL-DE-LA-PAPA/EndangeRed")
@@ -30,17 +30,29 @@ remotes::install_github("https://github.com/CENTRO-INTERNACIONAL-DE-LA-PAPA/Enda
 
 ## Example
 
-This is a basic example which shows you how to get the Red Listing of varieties.
+This is a basic example which shows you how to get the Red Listing of varieties based on the Overall Cultivar Frequency (OCF) and Relative Cultivar Frequency (RCF) values.
 
-First, we need to calculate the Overall Cultivar Frequency (OCF) and Relative Cultivar Frequency (RCF).
+Here we have two years of data, 2013 and 2017 on the same location.
 
 ```{r example}
-library(EndangeRed)
 
+library(EndangeRed)
+library(dplyr)
+library(tidyr)
 data(varieties_data)
 
+table(varieties_data$Año)
+
+```
+First let's select a year. For this example we will use 2013.
+
+```{r}
+
+varieties_data_2013 <- varieties_data %>%
+    filter(Año == 2013)
+
 ocf_data <- OCF(
-    dfr = varieties_data,
+    dfr = varieties_data_2013,
     vname = "variety_name",
     hh = "household_code",
     community = "community",
@@ -50,7 +62,7 @@ ocf_data <- OCF(
 print(head(ocf_data))
 
 rcf_data <- RCF(
-    dfr = varieties_data,
+    dfr = varieties_data_2013,
     vname = "variety_name",
     hh = "household_code",
     nsvarie = "number_of_tubers",
@@ -63,7 +75,7 @@ print(head(rcf_data))
 
 ```
 
-Now, we can plot the OCF and RCF values in normal scale:
+Now, we can plot the OCF and RCF values in normal scale by using the function `Plot_Variable_Red_Listing`.
 
 ```{r, message=FALSE}
 
@@ -93,3 +105,60 @@ red_listing_varieties <- combined_scales$varieties[[1]]
 print(red_listing_varieties)
 
 ```
+
+Now, what if we want to get the Red Listing of both years? We can do it by using the following code:
+
+```{r}
+
+library(patchwork)
+library(purrr)
+
+nested_data <- varieties_data %>% 
+    group_by(Año) %>% 
+    nest()
+
+nested_data <- nested_data %>% 
+    mutate(
+        OCF = map(data, ~OCF(
+            dfr = .x,
+            vname = "variety_name",
+            hh = "household_code",
+            community = "community",
+            location = "location"
+        )),
+        RCF = map(data, ~RCF(
+            dfr = .x,
+            vname = "variety_name",
+            hh = "household_code",
+            nsvarie = "number_of_tubers",
+            community = "community",
+            location = "location"
+        )),
+        Plots = pmap(list(OCF, RCF,Año), ~Plot_Variable_Red_Listing(.x, .y,type = "log") + 
+                         patchwork::plot_annotation(
+                             subtitle = Año,
+                             theme = ggplot2::theme(plot.subtitle = ggplot2::element_text(size = 12, hjust = 0.5, colour = "black"))
+                         )),
+        combined_scales = map2(OCF, RCF, ~Get_Red_Listing(.x, .y,type = "log"))
+    )
+
+nested_data
+
+```
+
+Notice that we have created a list of plots and a list of combined scales for each year. We can access the data by using the following code:
+
+For the year 2013:
+
+```{r}
+nested_data$Plots[[1]]
+nested_data$combined_scales[[1]]$varieties[[1]]
+```
+
+For the year 2017:
+
+```{r}
+nested_data$Plots[[2]]
+nested_data$combined_scales[[2]]$varieties[[1]]
+```
+
