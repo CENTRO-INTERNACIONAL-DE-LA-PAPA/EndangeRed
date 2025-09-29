@@ -10,12 +10,12 @@
 #' @export
 #'
 #' @examples
-#' data(varieties_data)
-#' ocf_data <- OCF(dfr=varieties_data,
-#' vname="variety_name",
-#' hh="household_code",
-#' community="community",
-#' location="location")
+#' data(Huancavelica_2013)
+#' ocf_data <- OCF(dfr=Huancavelica_2013,
+#' vname="final_variety_name",
+#' hh="household",
+#' community="comunidad",
+#' location="region")
 
 OCF <- function(dfr, vname, hh, community, location){
     if (inherits(dfr, "tibble")) {
@@ -56,12 +56,12 @@ OCF <- function(dfr, vname, hh, community, location){
 #' @export
 #'
 #' @examples
-#' data(varieties_data)
-#' ccf_data <- CCF(dfr=varieties_data,
-#' vname="variety_name",
-#' hh="household_code",
-#' community="community",
-#' location="location")
+#' data(Huancavelica_2013)
+#' ccf_data <- CCF(dfr=Huancavelica_2013,
+#' vname="final_variety_name",
+#' hh="household",
+#' community="comunidad",
+#' location="region")
 CCF <- function(dfr, vname, hh, community, location, pctn = TRUE){
     if (inherits(dfr, "tibble")) {
         dfr <- as.data.frame(dfr, stringsAsFactors = FALSE)

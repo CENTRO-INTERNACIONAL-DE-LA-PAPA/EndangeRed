@@ -22,8 +22,8 @@ A data frame with the HCf values
 Calculate household cultivar frequency
 }
 \examples{
-data(varieties_data)
-hcf_data <- HCF(dfr=varieties_data,
-hh="household_code",
-nsvarie="number_of_tubers")
+data(Huancavelica_2013)
+hcf_data <- HCF(dfr=Huancavelica_2013,
+hh="household",
+nsvarie="cantidad")
 }

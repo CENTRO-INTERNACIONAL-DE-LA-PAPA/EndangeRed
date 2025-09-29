@@ -39,126 +39,58 @@ Here we have two years of data, 2013 and 2017 on the same location.
 library(EndangeRed)
 library(dplyr)
 library(tidyr)
-data(varieties_data)
+data("Huancavelica_2013")
 
-table(varieties_data$Año)
+Huancavelica_2013 %>% 
+    head(5)
 
 ```
-First let's select a year. For this example we will use 2013.
+
+First let's select a year. For this example we will use Huancavelica data from 2013.
 
 ```{r}
 
-varieties_data_2013 <- varieties_data %>%
-    filter(Año == 2013)
-
 ocf_data <- OCF(
-    dfr = varieties_data_2013,
-    vname = "variety_name",
-    hh = "household_code",
-    community = "community",
-    location = "location"
+    dfr = Huancavelica_2013,
+    vname = "final_variety_name",
+    hh = "household",
+    community = "comunidad",
+    location = "region"
 )
 
 print(head(ocf_data))
 
 rcf_data <- RCF(
-    dfr = varieties_data_2013,
-    vname = "variety_name",
-    hh = "household_code",
-    nsvarie = "number_of_tubers",
-    community =
-        "community",
-    location = "location"
+    dfr = Huancavelica_2013,
+    vname = "final_variety_name",
+    hh = "household",
+    nsvarie = "cantidad",
+    community = "comunidad",
+    location = "region"
 )
 
 print(head(rcf_data))
 
 ```
 
-Now, we can plot the OCF and RCF values in normal scale by using the function `Plot_Variable_Red_Listing`.
-
-```{r, message=FALSE}
-
-Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "normal")
-
-```
-
-Or in log scale:
-
-```{r, message=FALSE}
-
-Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
-
-```
-
-
-If we need to get the varieties inside each quadrant we can do it by using the function `Get_Red_Listing`.
+If we need to get the endangered varieties we can do it by using calling the function `get_red_listing`.
 
 ```{r}
 
-combined_scales <- Get_Red_Listing(ocf_data, rcf_data,type = "log")
+endangered_varieties <- get_red_listing(Huancavelica_2013)
 
-print(combined_scales)
-
-red_listing_varieties <- combined_scales$varieties[[1]]
-
-print(red_listing_varieties)
+endangered_varieties %>% 
+    pull(risk_category) %>% table()
 
 ```
 
-Now, what if we want to get the Red Listing of both years? We can do it by using the following code:
+Let's see which varieties are the ones **At Risk**
 
 ```{r}
 
-library(patchwork)
-library(purrr)
+endangered_varieties %>% 
+    dplyr::filter(risk_category == "At Risk") %>% 
+    pull(final_variety_name)
 
-nested_data <- varieties_data %>% 
-    group_by(Año) %>% 
-    nest()
-
-nested_data <- nested_data %>% 
-    mutate(
-        OCF = map(data, ~OCF(
-            dfr = .x,
-            vname = "variety_name",
-            hh = "household_code",
-            community = "community",
-            location = "location"
-        )),
-        RCF = map(data, ~RCF(
-            dfr = .x,
-            vname = "variety_name",
-            hh = "household_code",
-            nsvarie = "number_of_tubers",
-            community = "community",
-            location = "location"
-        )),
-        Plots = pmap(list(OCF, RCF,Año), ~Plot_Variable_Red_Listing(.x, .y,type = "log") + 
-                         patchwork::plot_annotation(
-                             subtitle = Año,
-                             theme = ggplot2::theme(plot.subtitle = ggplot2::element_text(size = 12, hjust = 0.5, colour = "black"))
-                         )),
-        combined_scales = map2(OCF, RCF, ~Get_Red_Listing(.x, .y,type = "log"))
-    )
-
-nested_data
-
-```
-
-Notice that we have created a list of plots and a list of combined scales for each year. We can access the data by using the following code:
-
-For the year 2013:
-
-```{r}
-nested_data$Plots[[1]]
-nested_data$combined_scales[[1]]$varieties[[1]]
-```
-
-For the year 2017:
-
-```{r}
-nested_data$Plots[[2]]
-nested_data$combined_scales[[2]]$varieties[[1]]
 ```
 

@@ -28,11 +28,11 @@ A data frame with RCF percentages and metrics to calculate the RCF
 Calculate relative cultivar frequency (RCF)
 }
 \examples{
-data(varieties_data)
-rcf_data <- RCF(dfr=varieties_data,
-vname="variety_name",
-hh="household_code",
-nsvarie="number_of_tubers",
-community="community",
-location="location")
+data(Huancavelica_2013)
+rcf_data <- RCF(dfr=Huancavelica_2013,
+vname="final_variety_name",
+hh="household",
+nsvarie="cantidad",
+community="comunidad",
+location="region")
 }

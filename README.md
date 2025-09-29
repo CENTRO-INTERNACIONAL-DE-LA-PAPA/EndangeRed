@@ -4,6 +4,7 @@
 # EndangeRed
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of EndangeRed is to provide a tool to calculate the Red Listing
@@ -31,7 +32,7 @@ Here we have two years of data, 2013 and 2017 on the same location.
 library(EndangeRed)
 library(dplyr)
 #> 
-#> Adjuntando el paquete: 'dplyr'
+#> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
 #> 
 #>     filter, lag
@@ -39,27 +40,38 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(tidyr)
-data(varieties_data)
+data("Huancavelica_2013")
 
-table(varieties_data$Año)
-#> 
-#> 2013 2017 
-#> 3531 3185
+Huancavelica_2013 %>% 
+    head(5)
+#> # A tibble: 5 × 44
+#>      id unique_id_hjuarez source         year   id1 id_ppgis join  region codigo
+#>   <dbl>             <dbl> <chr>         <dbl> <dbl> <lgl>    <chr> <chr>  <lgl> 
+#> 1 14257             26959 https://doi.…  2013  3187 NA       CA-0… Huanc… NA    
+#> 2 14258             26960 https://doi.…  2013  3188 NA       CA-0… Huanc… NA    
+#> 3 14259             26961 https://doi.…  2013  3189 NA       CA-0… Huanc… NA    
+#> 4 14260             26962 https://doi.…  2013  3190 NA       CA-0… Huanc… NA    
+#> 5 14261             26963 https://doi.…  2013  3191 NA       CA-0… Huanc… NA    
+#> # ℹ 35 more variables: potato_landraces_data_set_cusco_code_id <chr>,
+#> #   comunidad <chr>, familia <chr>, household <chr>, parcela <dbl>,
+#> #   synonyms <chr>, cantidad <dbl>, categoria <chr>, sub_parcela <chr>,
+#> #   area_m2 <dbl>, area_ha <dbl>, altitud <dbl>, r_alt_200 <chr>,
+#> #   r_alt_100m <chr>, categoria_final <chr>, sum_ctdad <dbl>, a_var_m2 <dbl>,
+#> #   a_var_ha <dbl>, cod_fam <chr>, sum_var_xfaml <dbl>, n_cmdes <dbl>,
+#> #   n_famls <dbl>, fam_total_region <dbl>, final_variety_name <chr>, …
 ```
 
-First let’s select a year. For this example we will use 2013.
+First let’s select a year. For this example we will use Huancavelica
+data from 2013.
 
 ``` r
 
-varieties_data_2013 <- varieties_data %>%
-    filter(Año == 2013)
-
 ocf_data <- OCF(
-    dfr = varieties_data_2013,
-    vname = "variety_name",
-    hh = "household_code",
-    community = "community",
-    location = "location"
+    dfr = Huancavelica_2013,
+    vname = "final_variety_name",
+    hh = "household",
+    community = "comunidad",
+    location = "region"
 )
 
 print(head(ocf_data))
@@ -74,194 +86,93 @@ print(head(ocf_data))
 #> 6 Castillapata    70 Allqay Walash        11 15.7   73.7  24.6
 
 rcf_data <- RCF(
-    dfr = varieties_data_2013,
-    vname = "variety_name",
-    hh = "household_code",
-    nsvarie = "number_of_tubers",
-    community =
-        "community",
-    location = "location"
+    dfr = Huancavelica_2013,
+    vname = "final_variety_name",
+    hh = "household",
+    nsvarie = "cantidad",
+    community = "comunidad",
+    location = "region"
 )
 
 print(head(rcf_data))
-#> # A tibble: 6 × 9
-#>     Año variety_name   hh     community nsvarie location totalhcfxvarie total_hh
-#>   <dbl> <chr>          <chr>  <chr>       <dbl> <chr>             <dbl>    <int>
-#> 1  2013 Chiqchi Pasña  Hua_C… Castilla…      13 Huancav…          6.56       176
-#> 2  2013 Puca aqu suytu Hua_C… Castilla…      20 Huancav…         29.6        176
-#> 3  2013 Peruanita      Hua_C… Castilla…      30 Huancav…         10.7        176
-#> 4  2013 Santo domingo  Hua_C… Castilla…      30 Huancav…          0.682      176
-#> 5  2013 Allqay Walash  Hua_C… Castilla…      37 Huancav…          1.13       176
-#> 6  2013 Camotillo      Hua_C… Castilla…      70 Huancav…          8.48       176
-#> # ℹ 1 more variable: RCF <dbl>
+#> # A tibble: 6 × 47
+#>      id unique_id_hjuarez source       year   id1 id_ppgis join  location codigo
+#>   <dbl>             <dbl> <chr>       <dbl> <dbl> <lgl>    <chr> <chr>    <lgl> 
+#> 1 14257             26959 https://do…  2013  3187 NA       CA-0… Huancav… NA    
+#> 2 14258             26960 https://do…  2013  3188 NA       CA-0… Huancav… NA    
+#> 3 14259             26961 https://do…  2013  3189 NA       CA-0… Huancav… NA    
+#> 4 14260             26962 https://do…  2013  3190 NA       CA-0… Huancav… NA    
+#> 5 14261             26963 https://do…  2013  3191 NA       CA-0… Huancav… NA    
+#> 6 14262             26964 https://do…  2013  3192 NA       CA-0… Huancav… NA    
+#> # ℹ 38 more variables: potato_landraces_data_set_cusco_code_id <chr>,
+#> #   community <chr>, familia <chr>, hh <chr>, parcela <dbl>, synonyms <chr>,
+#> #   nsvarie <dbl>, categoria <chr>, sub_parcela <chr>, area_m2 <dbl>,
+#> #   area_ha <dbl>, altitud <dbl>, r_alt_200 <chr>, r_alt_100m <chr>,
+#> #   categoria_final <chr>, sum_ctdad <dbl>, a_var_m2 <dbl>, a_var_ha <dbl>,
+#> #   cod_fam <chr>, sum_var_xfaml <dbl>, n_cmdes <dbl>, n_famls <dbl>,
+#> #   fam_total_region <dbl>, variety_name <chr>, plots_cusc <lgl>, …
 ```
 
-Now, we can plot the OCF and RCF values in normal scale by using the
-function `Plot_Variable_Red_Listing`.
+If we need to get the endangered varieties we can do it by using calling
+the function `get_red_listing`.
 
 ``` r
 
-Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "normal")
+endangered_varieties <- get_red_listing(Huancavelica_2013)
+
+endangered_varieties %>% 
+    pull(risk_category) %>% table()
+#> .
+#>                At Risk     Critically At Risk Potentially Vulnerable 
+#>                    115                     83                   1296 
+#>                 Secure    Stable, Low Concern 
+#>                    287                   1848
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
-
-Or in log scale:
+Let’s see which varieties are the ones **At Risk**
 
 ``` r
 
-Plot_Variable_Red_Listing(ocf_data, rcf_data,type = "log")
-```
-
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
-
-If we need to get the varieties inside each quadrant we can do it by
-using the function `Get_Red_Listing`.
-
-``` r
-
-combined_scales <- Get_Red_Listing(ocf_data, rcf_data,type = "log")
-
-print(combined_scales)
-#> # A tibble: 8 × 3
-#>   OCF_scale           RCF_scale   varieties 
-#>   <fct>               <fct>       <list>    
-#> 1 very few households very scarse <chr [47]>
-#> 2 few households      very scarse <chr [31]>
-#> 3 many households     very scarse <chr [13]>
-#> 4 many households     scarse      <chr [8]> 
-#> 5 many households     common      <chr [1]> 
-#> 6 most households     scarse      <chr [5]> 
-#> 7 most households     common      <chr [9]> 
-#> 8 most households     abundant    <chr [5]>
-
-red_listing_varieties <- combined_scales$varieties[[1]]
-
-print(red_listing_varieties)
-#>  [1] "Culebras"              "Chiqchi Wali"          "Casa Blanca"          
-#>  [4] "Puka Wara"             "Ayrampu"               "Kuchipa Qallun"       
-#>  [7] "Yuraq Oca"             "Muru Kututu"           "Allqa suytu"          
-#> [10] "Suytu Oca"             "Puka Camotillo"        "Yuraq Ipillu"         
-#> [13] "Clavelina"             "Duraznillo"            "Yana wayru"           
-#> [16] "Ruywash"               "Chikñas Morado"        "Yana llumchuy waqachi"
-#> [19] "Allqa frescos"         "Muru Gaspar"           "Llamapa Sullun"       
-#> [22] "Azul Wayta"            "Ojos De Caiman"        "Ikichina"             
-#> [25] "Yana Poncho"           "Guindo Camotillo"      "Tumbay"               
-#> [28] "Alqu Yupi"             "Callwa Shiri"          "Puka Masa Waqachi"    
-#> [31] "Riti Waqachi"          "Amarilis"              "Maswa Papa"           
-#> [34] "Qillu Suytu"           "Puka Markina"          "Puka Cucharcas"       
-#> [37] "Yuraq tuqu"            "Puka Puqya"            "Amillica"             
-#> [40] "Suytu Dusis"           "Churquillay"           "Misipa Makin"         
-#> [43] "Azul Reboso"           "Supa Puchquchi"        "Uqi palta"            
-#> [46] "Renacimiento"          "Sumchillay"
-```
-
-Now, what if we want to get the Red Listing of both years? We can do it
-by using the following code:
-
-``` r
-
-library(patchwork)
-library(purrr)
-
-nested_data <- varieties_data %>% 
-    group_by(Año) %>% 
-    nest()
-
-nested_data <- nested_data %>% 
-    mutate(
-        OCF = map(data, ~OCF(
-            dfr = .x,
-            vname = "variety_name",
-            hh = "household_code",
-            community = "community",
-            location = "location"
-        )),
-        RCF = map(data, ~RCF(
-            dfr = .x,
-            vname = "variety_name",
-            hh = "household_code",
-            nsvarie = "number_of_tubers",
-            community = "community",
-            location = "location"
-        )),
-        Plots = pmap(list(OCF, RCF,Año), ~Plot_Variable_Red_Listing(.x, .y,type = "log") + 
-                         patchwork::plot_annotation(
-                             subtitle = Año,
-                             theme = ggplot2::theme(plot.subtitle = ggplot2::element_text(size = 12, hjust = 0.5, colour = "black"))
-                         )),
-        combined_scales = map2(OCF, RCF, ~Get_Red_Listing(.x, .y,type = "log"))
-    )
-
-nested_data
-#> # A tibble: 2 × 6
-#> # Groups:   Año [2]
-#>     Año data                 OCF      RCF      Plots      combined_scales 
-#>   <dbl> <list>               <list>   <list>   <list>     <list>          
-#> 1  2013 <tibble [3,531 × 5]> <tibble> <tibble> <patchwrk> <tibble [8 × 3]>
-#> 2  2017 <tibble [3,185 × 5]> <tibble> <tibble> <patchwrk> <tibble [9 × 3]>
-```
-
-Notice that we have created a list of plots and a list of combined
-scales for each year. We can access the data by using the following
-code:
-
-For the year 2013:
-
-``` r
-nested_data$Plots[[1]]
-#> `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
-```
-
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
-
-``` r
-nested_data$combined_scales[[1]]$varieties[[1]]
-#>  [1] "Culebras"              "Chiqchi Wali"          "Casa Blanca"          
-#>  [4] "Puka Wara"             "Ayrampu"               "Kuchipa Qallun"       
-#>  [7] "Yuraq Oca"             "Muru Kututu"           "Allqa suytu"          
-#> [10] "Suytu Oca"             "Puka Camotillo"        "Yuraq Ipillu"         
-#> [13] "Clavelina"             "Duraznillo"            "Yana wayru"           
-#> [16] "Ruywash"               "Chikñas Morado"        "Yana llumchuy waqachi"
-#> [19] "Allqa frescos"         "Muru Gaspar"           "Llamapa Sullun"       
-#> [22] "Azul Wayta"            "Ojos De Caiman"        "Ikichina"             
-#> [25] "Yana Poncho"           "Guindo Camotillo"      "Tumbay"               
-#> [28] "Alqu Yupi"             "Callwa Shiri"          "Puka Masa Waqachi"    
-#> [31] "Riti Waqachi"          "Amarilis"              "Maswa Papa"           
-#> [34] "Qillu Suytu"           "Puka Markina"          "Puka Cucharcas"       
-#> [37] "Yuraq tuqu"            "Puka Puqya"            "Amillica"             
-#> [40] "Suytu Dusis"           "Churquillay"           "Misipa Makin"         
-#> [43] "Azul Reboso"           "Supa Puchquchi"        "Uqi palta"            
-#> [46] "Renacimiento"          "Sumchillay"
-```
-
-For the year 2017:
-
-``` r
-nested_data$Plots[[2]]
-#> `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
-```
-
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
-
-``` r
-nested_data$combined_scales[[2]]$varieties[[1]]
-#>  [1] "Tomasa"               "Allqa Suytu"          "Achanqayra"          
-#>  [4] "Allqopa yuntun"       "Tuqra"                "Mariva"              
-#>  [7] "Huayllina"            "Muru Gaspar"          "Kichka matanka"      
-#> [10] "Puka culebra"         "Puka Qala Suytu"      "Callwa Shiri"        
-#> [13] "Yana Walash"          "Antalucia"            "Clon biofortificado" 
-#> [16] "Qano"                 "Puka Puqya"           "Muru torro"          
-#> [19] "Yana tullu"           "Andahuaylina"         "Awela papa"          
-#> [22] "Quri waqachi"         "Puka Walash"          "Llamapa rurun"       
-#> [25] "Tongina"              "Muru wali"            "Chaucha"             
-#> [28] "Muru pasña"           "Yawar Sonqo"          "Leona"               
-#> [31] "Puka allqa walash"    "Yuraq Winqu"          "Llamapa ñawin"       
-#> [34] "Azul reboso"          "Papa saco largo"      "Condorpa uman"       
-#> [37] "Chauchillas"          "Llashuena"            "Qillu Suytu"         
-#> [40] "Nativa"               "Yana ipillu"          "Condorpa chaquin"    
-#> [43] "Color moraleta"       "Huantinopa mediasnim" "Misipa Makin"        
-#> [46] "Sumaq Sonqo"          "Tornillo"             "Vacapa Runtun"       
-#> [49] "Puka Capiro"          "Yana manto"           "Condor allqa"        
-#> [52] "Yuraq Tumbay"
+endangered_varieties %>% 
+    dplyr::filter(risk_category == "At Risk") %>% 
+    pull(final_variety_name)
+#>   [1] "Culebras"              "Culebras"              "Culebras"             
+#>   [4] "Yuraq Ipillu"          "Yuraq Ipillu"          "Yuraq Ipillu"         
+#>   [7] "Qillu Ipillu"          "Qillu Ipillu"          "Qillu Ipillu"         
+#>  [10] "Qillu Ipillu"          "Qillu Ipillu"          "Kichka matanka"       
+#>  [13] "Kichka matanka"        "Kichka matanka"        "Kichka matanka"       
+#>  [16] "Yana llumchuy waqachi" "Yana llumchuy waqachi" "Yana llumchuy waqachi"
+#>  [19] "Yana llumchuy waqachi" "Allqa frescos"         "Allqa frescos"        
+#>  [22] "Allqa frescos"         "Llamapa Sullun"        "Llamapa Sullun"       
+#>  [25] "Yana Poncho"           "Yana Poncho"           "Uqi paya"             
+#>  [28] "Uqi paya"              "Uqi paya"              "Uqi paya"             
+#>  [31] "Uqi paya"              "Uqi paya"              "Uqi paya"             
+#>  [34] "Uqi paya"              "Uqi paya"              "Uqi paya"             
+#>  [37] "Uqi paya"              "Uqi paya"              "Uqi paya"             
+#>  [40] "Uqi paya"              "Qolqi tupu"            "Qolqi tupu"           
+#>  [43] "Qolqi tupu"            "Qolqi tupu"            "Qolqi tupu"           
+#>  [46] "Qolqi tupu"            "Azul Waña"             "Azul Waña"            
+#>  [49] "Azul Waña"             "Azul Waña"             "Azul Waña"            
+#>  [52] "Azul Waña"             "Azul Waña"             "Azul Waña"            
+#>  [55] "Azul Waña"             "Cucharcas"             "Cucharcas"            
+#>  [58] "Cucharcas"             "Cucharcas"             "Amarilis"             
+#>  [61] "Amarilis"              "Yuraq manua"           "Yuraq manua"          
+#>  [64] "Yuraq manua"           "Leona"                 "Leona"                
+#>  [67] "Leona"                 "Leona"                 "Leona"                
+#>  [70] "Leona"                 "Leona"                 "Leona"                
+#>  [73] "Leona"                 "Cuchi Pelo"            "Cuchi Pelo"           
+#>  [76] "Cuchi Pelo"            "Cuchi Pelo"            "Cuchi Pelo"           
+#>  [79] "Cuchi Pelo"            "Yana pumapa makin"     "Yana pumapa makin"    
+#>  [82] "Yana pumapa makin"     "Yana pumapa makin"     "Yana pumapa makin"    
+#>  [85] "Yana pumapa makin"     "Wamanpa Qallun"        "Wamanpa Qallun"       
+#>  [88] "Wamanpa Qallun"        "Wamanpa Qallun"        "Wamanpa Qallun"       
+#>  [91] "Wamanpa Qallun"        "Wamanpa Qallun"        "Wamanpa Qallun"       
+#>  [94] "Yuraq tuqu"            "Yuraq tuqu"            "Yuraq tuqu"           
+#>  [97] "Puka Puqya"            "Puka Puqya"            "Chaulina"             
+#> [100] "Chaulina"              "Chaulina"              "Chaulina"             
+#> [103] "Chaulina"              "Chaulina"              "Chaulina"             
+#> [106] "Chaulina"              "Chaulina"              "Chaulina"             
+#> [109] "Chaulina"              "Amillica"              "Amillica"             
+#> [112] "Misipa Makin"          "Misipa Makin"          "Misipa Makin"         
+#> [115] "Misipa Makin"
 ```

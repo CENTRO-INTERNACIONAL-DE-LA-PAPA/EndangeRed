@@ -24,10 +24,10 @@ A data frame with OCF percentages and metrics to calculate the OCF
 Calculate overall cultivar frequency (OCF)
 }
 \examples{
-data(varieties_data)
-ocf_data <- OCF(dfr=varieties_data,
-vname="variety_name",
-hh="household_code",
-community="community",
-location="location")
+data(Huancavelica_2013)
+ocf_data <- OCF(dfr=Huancavelica_2013,
+vname="final_variety_name",
+hh="household",
+community="comunidad",
+location="region")
 }
