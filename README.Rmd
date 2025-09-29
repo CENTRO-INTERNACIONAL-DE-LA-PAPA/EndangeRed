@@ -90,7 +90,8 @@ Let's see which varieties are the ones **At Risk**
 
 endangered_varieties %>% 
     dplyr::filter(risk_category == "At Risk") %>% 
-    pull(final_variety_name)
+    pull(final_variety_name) %>% 
+    table()
 
 ```
 

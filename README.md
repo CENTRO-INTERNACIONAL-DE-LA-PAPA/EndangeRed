@@ -135,44 +135,23 @@ Let’s see which varieties are the ones **At Risk**
 
 endangered_varieties %>% 
     dplyr::filter(risk_category == "At Risk") %>% 
-    pull(final_variety_name)
-#>   [1] "Culebras"              "Culebras"              "Culebras"             
-#>   [4] "Yuraq Ipillu"          "Yuraq Ipillu"          "Yuraq Ipillu"         
-#>   [7] "Qillu Ipillu"          "Qillu Ipillu"          "Qillu Ipillu"         
-#>  [10] "Qillu Ipillu"          "Qillu Ipillu"          "Kichka matanka"       
-#>  [13] "Kichka matanka"        "Kichka matanka"        "Kichka matanka"       
-#>  [16] "Yana llumchuy waqachi" "Yana llumchuy waqachi" "Yana llumchuy waqachi"
-#>  [19] "Yana llumchuy waqachi" "Allqa frescos"         "Allqa frescos"        
-#>  [22] "Allqa frescos"         "Llamapa Sullun"        "Llamapa Sullun"       
-#>  [25] "Yana Poncho"           "Yana Poncho"           "Uqi paya"             
-#>  [28] "Uqi paya"              "Uqi paya"              "Uqi paya"             
-#>  [31] "Uqi paya"              "Uqi paya"              "Uqi paya"             
-#>  [34] "Uqi paya"              "Uqi paya"              "Uqi paya"             
-#>  [37] "Uqi paya"              "Uqi paya"              "Uqi paya"             
-#>  [40] "Uqi paya"              "Qolqi tupu"            "Qolqi tupu"           
-#>  [43] "Qolqi tupu"            "Qolqi tupu"            "Qolqi tupu"           
-#>  [46] "Qolqi tupu"            "Azul Waña"             "Azul Waña"            
-#>  [49] "Azul Waña"             "Azul Waña"             "Azul Waña"            
-#>  [52] "Azul Waña"             "Azul Waña"             "Azul Waña"            
-#>  [55] "Azul Waña"             "Cucharcas"             "Cucharcas"            
-#>  [58] "Cucharcas"             "Cucharcas"             "Amarilis"             
-#>  [61] "Amarilis"              "Yuraq manua"           "Yuraq manua"          
-#>  [64] "Yuraq manua"           "Leona"                 "Leona"                
-#>  [67] "Leona"                 "Leona"                 "Leona"                
-#>  [70] "Leona"                 "Leona"                 "Leona"                
-#>  [73] "Leona"                 "Cuchi Pelo"            "Cuchi Pelo"           
-#>  [76] "Cuchi Pelo"            "Cuchi Pelo"            "Cuchi Pelo"           
-#>  [79] "Cuchi Pelo"            "Yana pumapa makin"     "Yana pumapa makin"    
-#>  [82] "Yana pumapa makin"     "Yana pumapa makin"     "Yana pumapa makin"    
-#>  [85] "Yana pumapa makin"     "Wamanpa Qallun"        "Wamanpa Qallun"       
-#>  [88] "Wamanpa Qallun"        "Wamanpa Qallun"        "Wamanpa Qallun"       
-#>  [91] "Wamanpa Qallun"        "Wamanpa Qallun"        "Wamanpa Qallun"       
-#>  [94] "Yuraq tuqu"            "Yuraq tuqu"            "Yuraq tuqu"           
-#>  [97] "Puka Puqya"            "Puka Puqya"            "Chaulina"             
-#> [100] "Chaulina"              "Chaulina"              "Chaulina"             
-#> [103] "Chaulina"              "Chaulina"              "Chaulina"             
-#> [106] "Chaulina"              "Chaulina"              "Chaulina"             
-#> [109] "Chaulina"              "Amillica"              "Amillica"             
-#> [112] "Misipa Makin"          "Misipa Makin"          "Misipa Makin"         
-#> [115] "Misipa Makin"
+    pull(final_variety_name) %>% 
+    table()
+#> .
+#>         Allqa frescos              Amarilis              Amillica 
+#>                     3                     2                     2 
+#>             Azul Waña              Chaulina             Cucharcas 
+#>                     9                    11                     4 
+#>            Cuchi Pelo              Culebras        Kichka matanka 
+#>                     6                     3                     4 
+#>                 Leona        Llamapa Sullun          Misipa Makin 
+#>                     9                     2                     4 
+#>            Puka Puqya          Qillu Ipillu            Qolqi tupu 
+#>                     2                     5                     6 
+#>              Uqi paya        Wamanpa Qallun Yana llumchuy waqachi 
+#>                    14                     8                     4 
+#>           Yana Poncho     Yana pumapa makin          Yuraq Ipillu 
+#>                     2                     6                     3 
+#>           Yuraq manua            Yuraq tuqu 
+#>                     3                     3
 ```
