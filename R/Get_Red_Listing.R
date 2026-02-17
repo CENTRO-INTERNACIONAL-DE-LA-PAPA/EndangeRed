@@ -1,20 +1,29 @@
 #' This function return the categorized varieties by risk
-#' 
+#'
 #' @param data A data frame with the data.
 #' @param variety_name_col String. Column name in `data` containing the variety names (default: "final_variety_name").
 #' @param community String. Column name in `data` for community identifiers (default: "comunidad").
 #' @param household String. Column name in `data` for household identifiers (default: "household").
 #' @param location String. Column name in `data` for location/region (default: "region").
 #' @param count String. Column name in `data` containing the per-household variety counts (default: "cantidad").
+#' @param coord_names Concatenation. Column names in  `data` contaning long and lat names (in that order).
+#' @param elevation_name String Column name in `data` for elevation (or altitude) column name.
 #' @return A tibble with per-record metrics and a `risk_category` factor summarizing vulnerability per variety.
 #' @export
 #'
 #' @examples
 #' data(Huancavelica_2013)
 
-
-get_red_listing <- function(data, variety_name_col="final_variety_name", community="comunidad", household = "household", location="region", count="cantidad"){
-    
+get_red_listing <- function(
+    data,
+    variety_name_col = "final_variety_name",
+    community = "comunidad",
+    household = "household",
+    location = "region",
+    count = "cantidad",
+    coord_names = c("long", "lat"),
+    elevation_name = "altitud"
+) {
     OCF_df = OCF(
         dfr = data,
         vname = variety_name_col,
@@ -22,15 +31,17 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
         community = community,
         location = location
     ) %>%
-        dplyr::select(community, variety_name, OCF) %>% 
-        dplyr::distinct() %>% 
-        dplyr::mutate(OCF_scale = dplyr::case_when(
-            OCF < 10 ~ "very few households",
-            OCF >= 10 & OCF < 30 ~ "few households",
-            OCF >= 30 & OCF < 50 ~ "many households",
-            OCF >= 50 ~ "most households"
-        ))
-    
+        dplyr::select(community, variety_name, OCF) %>%
+        dplyr::distinct() %>%
+        dplyr::mutate(
+            OCF_scale = dplyr::case_when(
+                OCF < 10 ~ "very few households",
+                OCF >= 10 & OCF < 30 ~ "few households",
+                OCF >= 30 & OCF < 50 ~ "many households",
+                OCF >= 50 ~ "most households"
+            )
+        )
+
     RCF_df = RCF(
         dfr = data,
         vname = variety_name_col,
@@ -39,31 +50,37 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
         community = community,
         location = location
     ) %>%
-        dplyr::select(community, variety_name, RCF) %>% 
-        dplyr::distinct() %>% 
-        dplyr::mutate(RCF_scale = dplyr::case_when(
-            RCF < 1 ~ "very scarce",
-            RCF >= 1 & RCF < 5 ~ "scarce",
-            RCF >= 5 & RCF < 15 ~ "common",
-            RCF >= 15 ~ "abundant"
-        ))
-    
+        dplyr::select(community, variety_name, RCF) %>%
+        dplyr::distinct() %>%
+        dplyr::mutate(
+            RCF_scale = dplyr::case_when(
+                RCF < 1 ~ "very scarce",
+                RCF >= 1 & RCF < 5 ~ "scarce",
+                RCF >= 5 & RCF < 15 ~ "common",
+                RCF >= 15 ~ "abundant"
+            )
+        )
+
     full_df <- data %>%
         dplyr::left_join(
             OCF_df,
-            dplyr::join_by(!!rlang::sym(variety_name_col) == variety_name,
-                           !!rlang::sym(community)       == community)
+            dplyr::join_by(
+                !!rlang::sym(variety_name_col) == variety_name,
+                !!rlang::sym(community) == community
+            )
         ) %>%
         dplyr::left_join(
             RCF_df,
-            dplyr::join_by(!!rlang::sym(variety_name_col) == variety_name,
-                           !!rlang::sym(community)       == community)
+            dplyr::join_by(
+                !!rlang::sym(variety_name_col) == variety_name,
+                !!rlang::sym(community) == community
+            )
         )
-    
+
     result_df = full_df %>%
         dplyr::group_by(!!dplyr::sym((variety_name_col))) %>%
         tidyr::nest() %>%
-        dplyr::mutate(res = purrr::map(data, calculate_distances)) %>%
+        dplyr::mutate(res = purrr::map(data, calculate_distances, coord_names = coord_names, elevation_name = elevation_name)) %>%
         tidyr::unnest(data) %>%
         tidyr::unnest(res) %>%
         dplyr::mutate(
@@ -86,7 +103,7 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
             )
         ) %>%
         dplyr::ungroup()
-    
+
     result_df$OCF_scale = factor(
         result_df$OCF_scale,
         levels = c(
@@ -96,11 +113,18 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
             "most households"
         )
     )
-    result_df$RCF_scale = factor(result_df$RCF_scale,
-                                 levels = c("very scarce", "scarce", "common", "abundant"))
+    result_df$RCF_scale = factor(
+        result_df$RCF_scale,
+        levels = c("very scarce", "scarce", "common", "abundant")
+    )
     result_df$dist_classes = factor(
         result_df$dist_classes,
-        levels = c("very narrow range", "narrow range", "medium range", "wide range")
+        levels = c(
+            "very narrow range",
+            "narrow range",
+            "medium range",
+            "wide range"
+        )
     )
     result_df$elevation_range_classes = factor(
         result_df$elevation_range_classes,
@@ -111,7 +135,7 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
             "wide altitudinal range"
         )
     )
-    
+
     categorized_data = result_df %>%
         dplyr::mutate(
             OCF_scale_num = as.integer(OCF_scale),
@@ -126,10 +150,12 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
             GDF_num,
             ADF_num
         ) %>%
-        dplyr::distinct() %>% 
-        dplyr::rowwise() %>% 
-        dplyr::mutate(metrics_sum = OCF_scale_num + RCF_scale_num + GDF_num + ADF_num) %>% 
-        dplyr::ungroup() %>% 
+        dplyr::distinct() %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(
+            metrics_sum = OCF_scale_num + RCF_scale_num + GDF_num + ADF_num
+        ) %>%
+        dplyr::ungroup() %>%
         dplyr::mutate(
             risk_category = dplyr::case_when(
                 metrics_sum <= 4 ~ "Critically At Risk",
@@ -139,11 +165,11 @@ get_red_listing <- function(data, variety_name_col="final_variety_name", communi
                 metrics_sum >= 16 ~ "Secure"
             )
         )
-    
+
     result_df <- result_df %>%
         dplyr::left_join(categorized_data, by = variety_name_col) %>%
         dplyr::mutate(risk_category = as.factor(risk_category))
-    
+
     return(result_df)
 }
 

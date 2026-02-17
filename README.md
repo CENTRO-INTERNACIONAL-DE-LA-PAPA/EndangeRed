@@ -40,11 +40,12 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(tidyr)
+
 data("Huancavelica_2013")
 
 Huancavelica_2013 %>% 
-    head(5)
-#> # A tibble: 5 × 44
+    head(6)
+#> # A tibble: 6 × 44
 #>      id unique_id_hjuarez source         year   id1 id_ppgis join  region codigo
 #>   <dbl>             <dbl> <chr>         <dbl> <dbl> <lgl>    <chr> <chr>  <lgl> 
 #> 1 14257             26959 https://doi.…  2013  3187 NA       CA-0… Huanc… NA    
@@ -52,6 +53,7 @@ Huancavelica_2013 %>%
 #> 3 14259             26961 https://doi.…  2013  3189 NA       CA-0… Huanc… NA    
 #> 4 14260             26962 https://doi.…  2013  3190 NA       CA-0… Huanc… NA    
 #> 5 14261             26963 https://doi.…  2013  3191 NA       CA-0… Huanc… NA    
+#> 6 14262             26964 https://doi.…  2013  3192 NA       CA-0… Huanc… NA    
 #> # ℹ 35 more variables: potato_landraces_data_set_cusco_code_id <chr>,
 #> #   comunidad <chr>, familia <chr>, household <chr>, parcela <dbl>,
 #> #   synonyms <chr>, cantidad <dbl>, categoria <chr>, sub_parcela <chr>,
@@ -118,11 +120,20 @@ the function `get_red_listing`.
 
 ``` r
 
-endangered_varieties <- get_red_listing(Huancavelica_2013)
+# Calculate risk categories
+results <- get_red_listing(
+  data = Huancavelica_2013,
+  variety_name_col = "final_variety_name",
+  community = "comunidad",
+  household = "household",
+  count = "cantidad",
+  coord_names = c("long", "lat"),
+  elevation_name = "altitud"
+)
 
-endangered_varieties %>% 
-    pull(risk_category) %>% table()
-#> .
+# Summary of variety status
+table(results$risk_category)
+#> 
 #>                At Risk     Critically At Risk Potentially Vulnerable 
 #>                    115                     83                   1296 
 #>                 Secure    Stable, Low Concern 
@@ -133,25 +144,18 @@ Let’s see which varieties are the ones **At Risk**
 
 ``` r
 
-endangered_varieties %>% 
-    dplyr::filter(risk_category == "At Risk") %>% 
-    pull(final_variety_name) %>% 
-    table()
-#> .
-#>         Allqa frescos              Amarilis              Amillica 
-#>                     3                     2                     2 
-#>             Azul Waña              Chaulina             Cucharcas 
-#>                     9                    11                     4 
-#>            Cuchi Pelo              Culebras        Kichka matanka 
-#>                     6                     3                     4 
-#>                 Leona        Llamapa Sullun          Misipa Makin 
-#>                     9                     2                     4 
-#>            Puka Puqya          Qillu Ipillu            Qolqi tupu 
-#>                     2                     5                     6 
-#>              Uqi paya        Wamanpa Qallun Yana llumchuy waqachi 
-#>                    14                     8                     4 
-#>           Yana Poncho     Yana pumapa makin          Yuraq Ipillu 
-#>                     2                     6                     3 
-#>           Yuraq manua            Yuraq tuqu 
-#>                     3                     3
+results %>% 
+  dplyr::filter(risk_category %in% c("At Risk", "Critically At Risk")) %>% 
+  dplyr::select(final_variety_name, risk_category, OCF_scale, RCF_scale) %>% 
+  distinct() %>% 
+  head()
+#> # A tibble: 6 × 4
+#>   final_variety_name risk_category      OCF_scale           RCF_scale  
+#>   <chr>              <fct>              <fct>               <fct>      
+#> 1 Culebras           At Risk            very few households very scarce
+#> 2 Chiqchi Wali       Critically At Risk very few households very scarce
+#> 3 Casa Blanca        Critically At Risk very few households very scarce
+#> 4 Puka Wara          Critically At Risk very few households very scarce
+#> 5 Ayrampu            Critically At Risk very few households very scarce
+#> 6 Achanqayra         Critically At Risk very few households very scarce
 ```

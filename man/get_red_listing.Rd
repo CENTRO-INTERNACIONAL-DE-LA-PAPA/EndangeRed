@@ -10,7 +10,9 @@ get_red_listing(
   community = "comunidad",
   household = "household",
   location = "region",
-  count = "cantidad"
+  count = "cantidad",
+  coord_names = c("long", "lat"),
+  elevation_name = "altitud"
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ get_red_listing(
 \item{location}{String. Column name in \code{data} for location/region (default: "region").}
 
 \item{count}{String. Column name in \code{data} containing the per-household variety counts (default: "cantidad").}
+
+\item{coord_names}{Concatenation. Column names in  \code{data} contaning long and lat names (in that order).}
+
+\item{elevation_name}{String Column name in \code{data} for elevation (or altitude) column name.}
 }
 \value{
 A tibble with per-record metrics and a \code{risk_category} factor summarizing vulnerability per variety.

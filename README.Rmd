@@ -39,10 +39,11 @@ Here we have two years of data, 2013 and 2017 on the same location.
 library(EndangeRed)
 library(dplyr)
 library(tidyr)
+
 data("Huancavelica_2013")
 
 Huancavelica_2013 %>% 
-    head(5)
+    head(6)
 
 ```
 
@@ -77,10 +78,19 @@ If we need to get the endangered varieties we can do it by using calling the fun
 
 ```{r}
 
-endangered_varieties <- get_red_listing(Huancavelica_2013)
+# Calculate risk categories
+results <- get_red_listing(
+  data = Huancavelica_2013,
+  variety_name_col = "final_variety_name",
+  community = "comunidad",
+  household = "household",
+  count = "cantidad",
+  coord_names = c("long", "lat"),
+  elevation_name = "altitud"
+)
 
-endangered_varieties %>% 
-    pull(risk_category) %>% table()
+# Summary of variety status
+table(results$risk_category)
 
 ```
 
@@ -88,10 +98,11 @@ Let's see which varieties are the ones **At Risk**
 
 ```{r}
 
-endangered_varieties %>% 
-    dplyr::filter(risk_category == "At Risk") %>% 
-    pull(final_variety_name) %>% 
-    table()
+results %>% 
+  dplyr::filter(risk_category %in% c("At Risk", "Critically At Risk")) %>% 
+  dplyr::select(final_variety_name, risk_category, OCF_scale, RCF_scale) %>% 
+  distinct() %>% 
+  head()
 
 ```
 
