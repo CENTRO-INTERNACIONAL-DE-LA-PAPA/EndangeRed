@@ -43,7 +43,7 @@ library(tidyr)
 
 data("Huancavelica_2013")
 
-Huancavelica_2013 %>% 
+Huancavelica_2013 %>%
     head(6)
 #> # A tibble: 6 × 44
 #>      id unique_id_hjuarez source         year   id1 id_ppgis join  region codigo
@@ -144,10 +144,10 @@ Let’s see which varieties are the ones **At Risk**
 
 ``` r
 
-results %>% 
-  dplyr::filter(risk_category %in% c("At Risk", "Critically At Risk")) %>% 
-  dplyr::select(final_variety_name, risk_category, OCF_scale, RCF_scale) %>% 
-  distinct() %>% 
+results %>%
+  dplyr::filter(risk_category %in% c("At Risk", "Critically At Risk")) %>%
+  dplyr::select(final_variety_name, risk_category, OCF_scale, RCF_scale) %>%
+  distinct() %>%
   head()
 #> # A tibble: 6 × 4
 #>   final_variety_name risk_category      OCF_scale           RCF_scale  
@@ -159,3 +159,14 @@ results %>%
 #> 5 Ayrampu            Critically At Risk very few households very scarce
 #> 6 Achanqayra         Critically At Risk very few households very scarce
 ```
+
+We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`, `ADF`)
+as a faceted matrix where each tile label is the number of varieties in
+that exact class combination.
+
+``` r
+
+plot_red_4d(results)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
