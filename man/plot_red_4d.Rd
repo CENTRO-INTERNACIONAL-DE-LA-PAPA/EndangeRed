@@ -7,8 +7,10 @@
 plot_red_4d(
   results,
   variety_col = "final_variety_name",
-  palette = c(`Critically At Risk` = "red", `Highly At Risk` = "orange", `At Risk` =
-    "yellow", Secure = "#8CD665", `Highly Secure` = "#1E7124")
+  palette = c(`Critically At Risk` = "#FF0000", `At Risk` = "#FFA500",
+    `Potentially Vulnerable` = "#FFFF00", `Stable, Low Concern` = "#92D050", Secure =
+    "#008000"),
+  return_tables = FALSE
 )
 }
 \arguments{
@@ -18,18 +20,25 @@ plot_red_4d(
 count unique varieties (default: \code{"final_variety_name"}).}
 
 \item{palette}{Named character vector with colors for \verb{Critically At Risk},
-\verb{Highly At Risk}, \verb{At Risk}, \code{Secure}, and \verb{Highly Secure}.}
+\verb{At Risk}, \verb{Potentially Vulnerable}, \verb{Stable, Low Concern}, and \code{Secure}.}
+
+\item{return_tables}{Logical. If \code{FALSE} (default), returns only the plot.
+If \code{TRUE}, returns a list with:
+\code{plot}, \code{square_summary}, \code{limiting_metric_table}, and
+\code{limiting_metric_detail}.}
 }
 \value{
-A ggplot object.
+A ggplot object, or a list (when \code{return_tables = TRUE}).
 }
 \description{
 Build a 4x4 matrix plot from the output of \code{\link[=get_red_listing]{get_red_listing()}}. This projects
 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
 the maximum of \code{GDF_num} and \code{RCF_scale_num}, while the Y-axis represents the
-maximum of \code{OCF_scale_num} and \code{ADF_num}. Tile fill encodes the combined risk
-category, while labels show the number of unique varieties and the observed
-\code{metrics_sum} range in each cell.
+maximum of \code{OCF_scale_num} and \code{ADF_num}. Tile fill follows the official
+\code{metrics_sum} decision bands:
+4 (\verb{Critically At Risk}), 5-7 (\verb{At Risk}), 8-11 (\verb{Potentially Vulnerable}),
+12-15 (\verb{Stable, Low Concern}), and 16 (\code{Secure}). Labels show the number of
+unique varieties and the observed \code{metrics_sum} range in each cell.
 }
 \examples{
 data(Huancavelica_2013)

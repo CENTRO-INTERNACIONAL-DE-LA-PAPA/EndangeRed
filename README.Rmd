@@ -113,3 +113,21 @@ We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`, `ADF`)!!
 plot_red_4d(results)
 
 ```
+
+You can also return tables to audit which metric is limiting each square.
+
+```{r}
+
+red4d_out <- plot_red_4d(results, return_tables = TRUE)
+
+head(red4d_out$limiting_metric_table)
+
+```
+
+And we can summarize unique variety counts per risk category:
+
+```{r, fig.width=10, fig.height=6}
+
+plot_risk_category_counts(results)
+
+```

@@ -169,3 +169,33 @@ plot_red_4d(results)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+
+You can also return tables to audit which metric is limiting each
+square.
+
+``` r
+
+red4d_out <- plot_red_4d(results, return_tables = TRUE)
+
+head(red4d_out$limiting_metric_table)
+#> # A tibble: 6 × 9
+#>       X     Y metric cell_label risk_category      n_varieties_raw
+#>   <int> <int> <ord>       <dbl> <ord>                        <int>
+#> 1     1     1 OCF             4 Critically At Risk              40
+#> 2     1     1 RCF             4 Critically At Risk              40
+#> 3     1     1 GDF             4 Critically At Risk              40
+#> 4     1     1 ADF             4 Critically At Risk              40
+#> 5     2     1 OCF             6 At Risk                          6
+#> 6     2     1 RCF             6 At Risk                          6
+#> # ℹ 3 more variables: n_varieties_weighted <dbl>, total_weighted <dbl>,
+#> #   pct_weighted <dbl>
+```
+
+And we can summarize unique variety counts per risk category:
+
+``` r
+
+plot_risk_category_counts(results)
+```
+
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
