@@ -24,11 +24,11 @@ plot_red_4d <- function(
     results,
     variety_col = "final_variety_name",
     palette = c(
-      "Critically At Risk" = "#D73027", # Muted red
-      "Highly At Risk"     = "#FC8D59", # Soft orange
-      "At Risk"            = "#FEE08B", # Warm yellow
-      "Secure"             = "#91CF60", # Light green
-      "Highly Secure"      = "#1A9850"  # Dark green
+      "Critically At Risk" = "red",
+      "Highly At Risk"     = "orange",
+      "At Risk"            = "yellow",
+      "Secure"             = "#8CD665", 
+      "Highly Secure"      = "#1E7124"
     )) {
   
   # 1. Validate required columns
