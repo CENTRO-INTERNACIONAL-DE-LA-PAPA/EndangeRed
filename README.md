@@ -183,10 +183,10 @@ head(red4d_out$square_metric_breakdown)
 #>   <int> <int>         <int>         <int>   <int>   <int>       <int>
 #> 1     1     1             1             1       1       1           4
 #> 2     2     1             1             1       2       1           5
-#> 3     3     1             1             1       3       1           6
-#> 4     4     1             1             1       4       1           7
-#> 5     1     2             1             1       1       2           5
-#> 6     2     2             1             1       2       2           6
+#> 3     2     1             1             1       2       2           6
+#> 4     2     1             1             1       3       1           6
+#> 5     2     1             1             1       3       2           7
+#> 6     2     1             1             1       4       1           7
 #> # ℹ 5 more variables: n_varieties <int>, cell_label <dbl>,
 #> #   theoretical_range <chr>, metrics_band <chr>, is_in_theoretical_band <lgl>
 ```

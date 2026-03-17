@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_red_4d.R
 \name{plot_red_4d}
 \alias{plot_red_4d}
-\title{Plot 4D red-listing classes as a theoretical 4x4 matrix}
+\title{Plot 4D red-listing classes as a 4x4 matrix with strict band assignment}
 \usage{
 plot_red_4d(
   results,
@@ -32,17 +32,25 @@ If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
 A ggplot object, or a list when \code{return_tables = TRUE}.
 }
 \description{
-Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output. The matrix projects
-4 variables into 2 coordinates:
-X = \code{pmax(GDF_num, RCF_scale_num)} and Y = \code{pmax(OCF_scale_num, ADF_num)}.
+Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output. Each variety is
+first projected to \verb{(X_proj, Y_proj)} using:
+\code{X_proj = pmax(GDF_num, RCF_scale_num)} and
+\code{Y_proj = pmax(OCF_scale_num, ADF_num)}.
 }
 \details{
-Tile colors follow the theoretical matrix bands (from \code{cell_label = 2 * (X + Y)}):
-4, 5-7, 8-11, 12-15, and 16.
+Then, to enforce strict risk-band logic while still plotting all varieties,
+each variety is assigned to exactly one matrix cell whose theoretical band
+matches its observed \code{metrics_sum} band:
+\itemize{
+\item \code{4}   -> Critically At Risk
+\item \code{5-7} -> At Risk
+\item \code{8-11} -> Potentially Vulnerable
+\item \code{12-15} -> Stable, Low Concern
+\item \code{16} -> Secure
+}
 
-The plot label shows strict in-band unique-variety counts per square (\code{n = ...}):
-a variety is counted in a square only if its observed \code{metrics_sum} falls
-inside that square's theoretical band.
+When multiple cells are valid for a band, the nearest cell (Manhattan
+distance from the projected point) is chosen.
 }
 \examples{
 data(Huancavelica_2013)
