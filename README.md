@@ -160,9 +160,8 @@ results %>%
 #> 6 Achanqayra         Critically At Risk very few households very scarce
 ```
 
-We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`, `ADF`)
-as a faceted matrix where each tile label is the number of varieties in
-that exact class combination.
+We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`,
+`ADF`).
 
 ``` r
 
