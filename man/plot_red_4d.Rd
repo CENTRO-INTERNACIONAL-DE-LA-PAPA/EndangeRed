@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_red_4d.R
 \name{plot_red_4d}
 \alias{plot_red_4d}
-\title{Plot 4D red-listing class combinations as a 2D projected matrix}
+\title{Plot 4D red-listing classes as a theoretical 4x4 matrix}
 \usage{
 plot_red_4d(
   results,
@@ -23,22 +23,23 @@ count unique varieties (default: \code{"final_variety_name"}).}
 \verb{At Risk}, \verb{Potentially Vulnerable}, \verb{Stable, Low Concern}, and \code{Secure}.}
 
 \item{return_tables}{Logical. If \code{FALSE} (default), returns only the plot.
-If \code{TRUE}, returns a list with:
-\code{plot}, \code{square_summary}, \code{limiting_metric_table}, and
-\code{limiting_metric_detail}.}
+If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
+\code{square_sum_breakdown}, \code{square_metric_breakdown}, and
+\code{variety_assignment}.}
 }
 \value{
-A ggplot object, or a list (when \code{return_tables = TRUE}).
+A ggplot object, or a list when \code{return_tables = TRUE}.
 }
 \description{
-Build a 4x4 matrix plot from the output of \code{\link[=get_red_listing]{get_red_listing()}}. This projects
-4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
-the maximum of \code{GDF_num} and \code{RCF_scale_num}, while the Y-axis represents the
-maximum of \code{OCF_scale_num} and \code{ADF_num}. Tile fill follows the official
-\code{metrics_sum} decision bands:
-4 (\verb{Critically At Risk}), 5-7 (\verb{At Risk}), 8-11 (\verb{Potentially Vulnerable}),
-12-15 (\verb{Stable, Low Concern}), and 16 (\code{Secure}). Labels show the number of
-unique varieties and the observed \code{metrics_sum} range in each cell.
+Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output. The matrix projects
+4 variables into 2 coordinates:
+X = \code{pmax(GDF_num, RCF_scale_num)} and Y = \code{pmax(OCF_scale_num, ADF_num)}.
+}
+\details{
+Tile colors follow the theoretical matrix bands (from \code{cell_label = 2 * (X + Y)}):
+4, 5-7, 8-11, 12-15, and 16.
+
+The plot label shows only unique-variety counts per square (\code{n = ...}).
 }
 \examples{
 data(Huancavelica_2013)

@@ -1,13 +1,13 @@
-#' Plot 4D red-listing class combinations as a 2D projected matrix
+#' Plot 4D red-listing classes as a theoretical 4x4 matrix
 #'
-#' Build a 4x4 matrix plot from the output of [get_red_listing()]. This projects
-#' 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
-#' the maximum of `GDF_num` and `RCF_scale_num`, while the Y-axis represents the
-#' maximum of `OCF_scale_num` and `ADF_num`. Tile fill follows the official
-#' `metrics_sum` decision bands:
-#' 4 (`Critically At Risk`), 5-7 (`At Risk`), 8-11 (`Potentially Vulnerable`),
-#' 12-15 (`Stable, Low Concern`), and 16 (`Secure`). Labels show the number of
-#' unique varieties and the observed `metrics_sum` range in each cell.
+#' Build a 4x4 matrix plot from [get_red_listing()] output. The matrix projects
+#' 4 variables into 2 coordinates:
+#' X = `pmax(GDF_num, RCF_scale_num)` and Y = `pmax(OCF_scale_num, ADF_num)`.
+#'
+#' Tile colors follow the theoretical matrix bands (from `cell_label = 2 * (X + Y)`):
+#' 4, 5-7, 8-11, 12-15, and 16.
+#'
+#' The plot label shows only unique-variety counts per square (`n = ...`).
 #'
 #' @param results A data frame returned by [get_red_listing()].
 #' @param variety_col String. Variety identifier column in `results` used to
@@ -15,11 +15,11 @@
 #' @param palette Named character vector with colors for `Critically At Risk`,
 #'   `At Risk`, `Potentially Vulnerable`, `Stable, Low Concern`, and `Secure`.
 #' @param return_tables Logical. If `FALSE` (default), returns only the plot.
-#'   If `TRUE`, returns a list with:
-#'   `plot`, `square_summary`, `limiting_metric_table`, and
-#'   `limiting_metric_detail`.
+#'   If `TRUE`, returns a list with `plot`, `square_summary`,
+#'   `square_sum_breakdown`, `square_metric_breakdown`, and
+#'   `variety_assignment`.
 #'
-#' @return A ggplot object, or a list (when `return_tables = TRUE`).
+#' @return A ggplot object, or a list when `return_tables = TRUE`.
 #' @export
 #'
 #' @examples
@@ -69,23 +69,9 @@ plot_red_4d <- function(
     )
   }
 
-  grid_matrix <- expand.grid(X = 1:4, Y = 1:4) %>%
-    dplyr::mutate(
-      cell_label = 2 * (X + Y),
-      risk_category = dplyr::case_when(
-        cell_label == 4 ~ "Critically At Risk",
-        cell_label >= 5 & cell_label <= 7 ~ "At Risk",
-        cell_label >= 8 & cell_label <= 11 ~ "Potentially Vulnerable",
-        cell_label >= 12 & cell_label <= 15 ~ "Stable, Low Concern",
-        cell_label == 16 ~ "Secure"
-      ),
-      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
-    )
-
   v <- rlang::sym(variety_col)
-  metric_levels <- c("OCF", "RCF", "GDF", "ADF")
 
-  variety_square_df <- results %>%
+  variety_assignment <- results %>%
     dplyr::filter(
       !is.na(!!v),
       !is.na(OCF_scale_num),
@@ -93,147 +79,112 @@ plot_red_4d <- function(
       !is.na(GDF_num),
       !is.na(ADF_num)
     ) %>%
-    dplyr::mutate(
+    dplyr::transmute(
+      !!v,
+      OCF_scale_num = as.integer(OCF_scale_num),
+      RCF_scale_num = as.integer(RCF_scale_num),
+      GDF_num = as.integer(GDF_num),
+      ADF_num = as.integer(ADF_num),
       metrics_sum = OCF_scale_num + RCF_scale_num + GDF_num + ADF_num,
       X = pmax(GDF_num, RCF_scale_num),
-      Y = pmax(OCF_scale_num, ADF_num),
-      cell_label = 2 * (X + Y)
-    ) %>%
-    dplyr::select(
-      !!v,
-      X,
-      Y,
-      cell_label,
-      metrics_sum,
-      OCF_scale_num,
-      RCF_scale_num,
-      GDF_num,
-      ADF_num
+      Y = pmax(OCF_scale_num, ADF_num)
     ) %>%
     dplyr::distinct() %>%
+    dplyr::mutate(
+      cell_label = 2 * (X + Y),
+      theoretical_range = dplyr::case_when(
+        cell_label == 4 ~ "4",
+        cell_label >= 5 & cell_label <= 7 ~ "5-7",
+        cell_label >= 8 & cell_label <= 11 ~ "8-11",
+        cell_label >= 12 & cell_label <= 15 ~ "12-15",
+        cell_label == 16 ~ "16"
+      ),
+      risk_category = dplyr::case_when(
+        theoretical_range == "4" ~ "Critically At Risk",
+        theoretical_range == "5-7" ~ "At Risk",
+        theoretical_range == "8-11" ~ "Potentially Vulnerable",
+        theoretical_range == "12-15" ~ "Stable, Low Concern",
+        theoretical_range == "16" ~ "Secure"
+      ),
+      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
+    ) %>%
     dplyr::ungroup()
 
-  plot_df <- variety_square_df %>%
+  square_summary <- variety_assignment %>%
     dplyr::group_by(X, Y) %>%
     dplyr::summarise(
       n = dplyr::n_distinct(!!v),
-      metrics_sum_min = min(metrics_sum, na.rm = TRUE),
-      metrics_sum_max = max(metrics_sum, na.rm = TRUE),
+      observed_min_sum = min(metrics_sum, na.rm = TRUE),
+      observed_max_sum = max(metrics_sum, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0)) %>%
+    tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0L)) %>%
     dplyr::mutate(
       cell_label = 2 * (X + Y),
-      metrics_sum_label = dplyr::case_when(
-        n == 0 ~ "m = -",
-        metrics_sum_min == metrics_sum_max ~ paste0("m = ", metrics_sum_min),
-        TRUE ~ paste0("m = ", metrics_sum_min, "-", metrics_sum_max)
-      )
+      theoretical_range = dplyr::case_when(
+        cell_label == 4 ~ "4",
+        cell_label >= 5 & cell_label <= 7 ~ "5-7",
+        cell_label >= 8 & cell_label <= 11 ~ "8-11",
+        cell_label >= 12 & cell_label <= 15 ~ "12-15",
+        cell_label == 16 ~ "16"
+      ),
+      risk_category = dplyr::case_when(
+        theoretical_range == "4" ~ "Critically At Risk",
+        theoretical_range == "5-7" ~ "At Risk",
+        theoretical_range == "8-11" ~ "Potentially Vulnerable",
+        theoretical_range == "12-15" ~ "Stable, Low Concern",
+        theoretical_range == "16" ~ "Secure"
+      ),
+      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
     ) %>%
-    dplyr::left_join(
-      grid_matrix %>% dplyr::select(X, Y, risk_category),
-      by = c("X", "Y")
-    )
+    dplyr::arrange(Y, X)
 
-  limiting_metric_detail <- variety_square_df %>%
-    dplyr::select(
-      !!v,
+  square_sum_breakdown <- variety_assignment %>%
+    dplyr::group_by(X, Y, metrics_sum) %>%
+    dplyr::summarise(n_varieties = dplyr::n_distinct(!!v), .groups = "drop") %>%
+    tidyr::complete(X = 1:4, Y = 1:4, metrics_sum = 4:16, fill = list(n_varieties = 0L)) %>%
+    dplyr::mutate(
+      cell_label = 2 * (X + Y),
+      possible_min_sum = X + Y + 2,
+      possible_max_sum = 2 * (X + Y),
+      is_possible_for_square = metrics_sum >= possible_min_sum & metrics_sum <= possible_max_sum
+    ) %>%
+    dplyr::arrange(Y, X, metrics_sum)
+
+  square_metric_breakdown <- variety_assignment %>%
+    dplyr::group_by(
       X,
       Y,
-      cell_label,
-      metrics_sum,
-      OCF_metric = OCF_scale_num,
-      RCF_metric = RCF_scale_num,
-      GDF_metric = GDF_num,
-      ADF_metric = ADF_num
+      OCF_scale_num,
+      RCF_scale_num,
+      GDF_num,
+      ADF_num,
+      metrics_sum
     ) %>%
-    tidyr::pivot_longer(
-      cols = c(OCF_metric, RCF_metric, GDF_metric, ADF_metric),
-      names_to = "metric",
-      values_to = "metric_value"
-    ) %>%
-    dplyr::group_by(!!v, X, Y, cell_label, metrics_sum) %>%
-    dplyr::mutate(
-      min_metric_value = min(metric_value, na.rm = TRUE),
-      n_limiting_metrics = sum(metric_value == min_metric_value, na.rm = TRUE),
-      is_limiting_metric = metric_value == min_metric_value,
-      contribution_weight = dplyr::if_else(
-        is_limiting_metric,
-        1 / n_limiting_metrics,
-        0
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(is_limiting_metric) %>%
-    dplyr::mutate(
-      metric = dplyr::recode(
-        metric,
-        OCF_metric = "OCF",
-        RCF_metric = "RCF",
-        GDF_metric = "GDF",
-        ADF_metric = "ADF"
-      ),
-      metric = factor(metric, levels = metric_levels, ordered = TRUE),
-      risk_category = dplyr::case_when(
-        cell_label == 4 ~ "Critically At Risk",
-        cell_label >= 5 & cell_label <= 7 ~ "At Risk",
-        cell_label >= 8 & cell_label <= 11 ~ "Potentially Vulnerable",
-        cell_label >= 12 & cell_label <= 15 ~ "Stable, Low Concern",
-        cell_label == 16 ~ "Secure"
-      ),
-      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
-    )
+    dplyr::summarise(n_varieties = dplyr::n_distinct(!!v), .groups = "drop") %>%
+    dplyr::mutate(cell_label = 2 * (X + Y)) %>%
+    dplyr::arrange(Y, X, metrics_sum, OCF_scale_num, RCF_scale_num, GDF_num, ADF_num)
 
-  limiting_metric_table <- limiting_metric_detail %>%
-    dplyr::group_by(X, Y, cell_label, risk_category, metric) %>%
-    dplyr::summarise(
-      n_varieties_raw = dplyr::n(),
-      n_varieties_weighted = sum(contribution_weight, na.rm = TRUE),
-      .groups = "drop"
-    ) %>%
-    tidyr::complete(
-      X = 1:4,
-      Y = 1:4,
-      metric = factor(metric_levels, levels = metric_levels, ordered = TRUE),
-      fill = list(n_varieties_raw = 0, n_varieties_weighted = 0)
-    ) %>%
-    dplyr::mutate(
-      cell_label = 2 * (X + Y),
-      risk_category = dplyr::case_when(
-        cell_label == 4 ~ "Critically At Risk",
-        cell_label >= 5 & cell_label <= 7 ~ "At Risk",
-        cell_label >= 8 & cell_label <= 11 ~ "Potentially Vulnerable",
-        cell_label >= 12 & cell_label <= 15 ~ "Stable, Low Concern",
-        cell_label == 16 ~ "Secure"
-      ),
-      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
-    ) %>%
-    dplyr::group_by(X, Y, cell_label, risk_category) %>%
-    dplyr::mutate(
-      total_weighted = sum(n_varieties_weighted, na.rm = TRUE),
-      pct_weighted = dplyr::if_else(
-        total_weighted > 0,
-        n_varieties_weighted / total_weighted,
-        NA_real_
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::arrange(Y, X, metric)
-
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = X, y = Y)) +
+  p <- ggplot2::ggplot(square_summary, ggplot2::aes(x = X, y = Y)) +
     ggplot2::geom_tile(
       ggplot2::aes(fill = risk_category),
       color = "black",
       linewidth = 0.5
     ) +
     ggplot2::geom_text(
-      ggplot2::aes(label = cell_label),
-      hjust = 1, vjust = 0, nudge_x = 0.4, nudge_y = -0.4,
-      size = 5, color = "black", alpha = 0.6
+      ggplot2::aes(label = paste0("n = ", n)),
+      size = 4.4,
+      fontface = "bold"
     ) +
     ggplot2::geom_text(
-      ggplot2::aes(label = paste0("n = ", n, "\n", metrics_sum_label)),
-      size = 4.2, fontface = "bold", lineheight = 1.0
+      ggplot2::aes(label = theoretical_range),
+      hjust = 1,
+      vjust = 0,
+      nudge_x = 0.42,
+      nudge_y = -0.42,
+      size = 4.2,
+      color = "black",
+      alpha = 0.55
     ) +
     ggplot2::scale_fill_manual(values = palette, guide = "none", drop = FALSE) +
     ggplot2::scale_x_continuous(
@@ -273,23 +224,12 @@ plot_red_4d <- function(
     ggplot2::coord_equal()
 
   if (isTRUE(return_tables)) {
-    square_summary <- plot_df %>%
-      dplyr::select(dplyr::all_of(c(
-        "X",
-        "Y",
-        "cell_label",
-        "risk_category",
-        "n",
-        "metrics_sum_min",
-        "metrics_sum_max",
-        "metrics_sum_label"
-      )))
-
     return(list(
       plot = p,
       square_summary = square_summary,
-      limiting_metric_table = limiting_metric_table,
-      limiting_metric_detail = limiting_metric_detail
+      square_sum_breakdown = square_sum_breakdown,
+      square_metric_breakdown = square_metric_breakdown,
+      variety_assignment = variety_assignment
     ))
   }
 
@@ -297,10 +237,7 @@ plot_red_4d <- function(
 }
 
 # Prevent R CMD check notes for unquoted variables.
-X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <-
-  OCF_scale_num <- ADF_num <- metrics_sum <- metrics_sum_min <-
-  metrics_sum_max <- metrics_sum_label <- OCF_metric <- RCF_metric <-
-  GDF_metric <- ADF_metric <-
-  metric <- metric_value <- min_metric_value <- n_limiting_metrics <-
-  is_limiting_metric <- contribution_weight <- n_varieties_raw <-
-  n_varieties_weighted <- total_weighted <- pct_weighted <- NULL
+X <- Y <- n <- OCF_scale_num <- RCF_scale_num <- GDF_num <- ADF_num <-
+  metrics_sum <- cell_label <- theoretical_range <- risk_category <-
+  observed_min_sum <- observed_max_sum <- n_varieties <- possible_min_sum <-
+  possible_max_sum <- is_possible_for_square <- NULL

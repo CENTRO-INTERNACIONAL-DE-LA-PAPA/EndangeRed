@@ -114,13 +114,14 @@ plot_red_4d(results)
 
 ```
 
-You can also return tables to audit which metric is limiting each square.
+You can also return audit tables to track which metric combinations
+(`OCF`, `RCF`, `GDF`, `ADF`) are contributing to each square.
 
 ```{r}
 
 red4d_out <- plot_red_4d(results, return_tables = TRUE)
 
-head(red4d_out$limiting_metric_table)
+head(red4d_out$square_metric_breakdown)
 
 ```
 
