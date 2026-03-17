@@ -28,7 +28,8 @@ Build a 4x4 matrix plot from the output of \code{\link[=get_red_listing]{get_red
 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
 the maximum of \code{GDF_num} and \code{RCF_scale_num}, while the Y-axis represents the
 maximum of \code{OCF_scale_num} and \code{ADF_num}. Tile fill encodes the combined risk
-category, while labels show the number of unique varieties in each cell.
+category, while labels show the number of unique varieties and the observed
+\code{metrics_sum} range in each cell.
 }
 \examples{
 data(Huancavelica_2013)

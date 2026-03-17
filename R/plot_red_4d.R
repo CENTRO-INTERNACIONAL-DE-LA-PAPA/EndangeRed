@@ -4,7 +4,8 @@
 #' 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
 #' the maximum of `GDF_num` and `RCF_scale_num`, while the Y-axis represents the
 #' maximum of `OCF_scale_num` and `ADF_num`. Tile fill encodes the combined risk
-#' category, while labels show the number of unique varieties in each cell.
+#' category, while labels show the number of unique varieties and the observed
+#' `metrics_sum` range in each cell.
 #'
 #' @param results A data frame returned by [get_red_listing()].
 #' @param variety_col String. Variety identifier column in `results` used to
@@ -102,13 +103,28 @@ plot_red_4d <- function(
       !is.na(ADF_num)
     ) %>%
     dplyr::mutate(
+      metrics_sum = OCF_scale_num + RCF_scale_num + GDF_num + ADF_num,
       X = pmax(GDF_num, RCF_scale_num),
       Y = pmax(OCF_scale_num, ADF_num)
     ) %>%
+    dplyr::select(!!v, X, Y, metrics_sum) %>%
+    dplyr::distinct() %>%
     dplyr::group_by(X, Y) %>%
-    # Count the unique varieties per coordinate cell
-    dplyr::summarise(n = dplyr::n_distinct(!!v), .groups = "drop") %>%
+    # Count unique varieties and summarize observed metrics_sum per cell
+    dplyr::summarise(
+      n = dplyr::n_distinct(!!v),
+      metrics_sum_min = min(metrics_sum, na.rm = TRUE),
+      metrics_sum_max = max(metrics_sum, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
     tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0)) %>%
+    dplyr::mutate(
+      metrics_sum_label = dplyr::case_when(
+        n == 0 ~ "m = -",
+        metrics_sum_min == metrics_sum_max ~ paste0("m = ", metrics_sum_min),
+        TRUE ~ paste0("m = ", metrics_sum_min, "-", metrics_sum_max)
+      )
+    ) %>%
     dplyr::left_join(grid_matrix, by = c("X", "Y"))
 
   # 5. Plot the matrix
@@ -124,10 +140,10 @@ plot_red_4d <- function(
       hjust = 1, vjust = 0, nudge_x = 0.4, nudge_y = -0.4,
       size = 5, color = "black", alpha = 0.6
     ) +
-    # Actual unique counts ('n') centered
+    # Actual unique counts ('n') and observed metrics_sum range, centered
     ggplot2::geom_text(
-      ggplot2::aes(label = paste0("n = ", n)),
-      size = 5, fontface = "bold"
+      ggplot2::aes(label = paste0("n = ", n, "\n", metrics_sum_label)),
+      size = 4.2, fontface = "bold", lineheight = 1.0
     ) +
     ggplot2::scale_fill_manual(
       values = palette,
@@ -175,4 +191,5 @@ plot_red_4d <- function(
 
 # Prevent R CMD check notes for unquoted variables.
 X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <-
-  OCF_scale_num <- ADF_num <- NULL
+  OCF_scale_num <- ADF_num <- metrics_sum <- metrics_sum_min <-
+  metrics_sum_max <- metrics_sum_label <- NULL
