@@ -7,7 +7,9 @@
 #' Tile colors follow the theoretical matrix bands (from `cell_label = 2 * (X + Y)`):
 #' 4, 5-7, 8-11, 12-15, and 16.
 #'
-#' The plot label shows only unique-variety counts per square (`n = ...`).
+#' The plot label shows strict in-band unique-variety counts per square (`n = ...`):
+#' a variety is counted in a square only if its observed `metrics_sum` falls
+#' inside that square's theoretical band.
 #'
 #' @param results A data frame returned by [get_red_listing()].
 #' @param variety_col String. Variety identifier column in `results` used to
@@ -17,7 +19,8 @@
 #' @param return_tables Logical. If `FALSE` (default), returns only the plot.
 #'   If `TRUE`, returns a list with `plot`, `square_summary`,
 #'   `square_sum_breakdown`, `square_metric_breakdown`, and
-#'   `variety_assignment`.
+#'   `variety_assignment`. For backward compatibility it also includes
+#'   `limiting_metric_table` and `limiting_metric_detail`.
 #'
 #' @return A ggplot object, or a list when `return_tables = TRUE`.
 #' @export
@@ -106,19 +109,34 @@ plot_red_4d <- function(
         theoretical_range == "12-15" ~ "Stable, Low Concern",
         theoretical_range == "16" ~ "Secure"
       ),
+      metrics_band = dplyr::case_when(
+        metrics_sum == 4 ~ "4",
+        metrics_sum >= 5 & metrics_sum <= 7 ~ "5-7",
+        metrics_sum >= 8 & metrics_sum <= 11 ~ "8-11",
+        metrics_sum >= 12 & metrics_sum <= 15 ~ "12-15",
+        metrics_sum == 16 ~ "16"
+      ),
+      is_in_theoretical_band = metrics_band == theoretical_range,
       risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
     ) %>%
     dplyr::ungroup()
 
-  square_summary <- variety_assignment %>%
+  square_observed <- variety_assignment %>%
     dplyr::group_by(X, Y) %>%
     dplyr::summarise(
-      n = dplyr::n_distinct(!!v),
+      n_total = dplyr::n_distinct(!!v),
+      n_in_band = dplyr::n_distinct((!!v)[is_in_theoretical_band]),
       observed_min_sum = min(metrics_sum, na.rm = TRUE),
       observed_max_sum = max(metrics_sum, na.rm = TRUE),
       .groups = "drop"
+    )
+
+  square_summary <- tidyr::expand_grid(X = 1:4, Y = 1:4) %>%
+    dplyr::left_join(square_observed, by = c("X", "Y")) %>%
+    dplyr::mutate(
+      n_total = dplyr::coalesce(n_total, 0L),
+      n_in_band = dplyr::coalesce(n_in_band, 0L)
     ) %>%
-    tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0L)) %>%
     dplyr::mutate(
       cell_label = 2 * (X + Y),
       theoretical_range = dplyr::case_when(
@@ -134,7 +152,10 @@ plot_red_4d <- function(
         theoretical_range == "8-11" ~ "Potentially Vulnerable",
         theoretical_range == "12-15" ~ "Stable, Low Concern",
         theoretical_range == "16" ~ "Secure"
-      ),
+      )
+    ) %>%
+    dplyr::mutate(
+      n = n_in_band,
       risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
     ) %>%
     dplyr::arrange(Y, X)
@@ -147,7 +168,22 @@ plot_red_4d <- function(
       cell_label = 2 * (X + Y),
       possible_min_sum = X + Y + 2,
       possible_max_sum = 2 * (X + Y),
-      is_possible_for_square = metrics_sum >= possible_min_sum & metrics_sum <= possible_max_sum
+      is_possible_for_square = metrics_sum >= possible_min_sum & metrics_sum <= possible_max_sum,
+      theoretical_range = dplyr::case_when(
+        cell_label == 4 ~ "4",
+        cell_label >= 5 & cell_label <= 7 ~ "5-7",
+        cell_label >= 8 & cell_label <= 11 ~ "8-11",
+        cell_label >= 12 & cell_label <= 15 ~ "12-15",
+        cell_label == 16 ~ "16"
+      ),
+      metrics_band = dplyr::case_when(
+        metrics_sum == 4 ~ "4",
+        metrics_sum >= 5 & metrics_sum <= 7 ~ "5-7",
+        metrics_sum >= 8 & metrics_sum <= 11 ~ "8-11",
+        metrics_sum >= 12 & metrics_sum <= 15 ~ "12-15",
+        metrics_sum == 16 ~ "16"
+      ),
+      is_in_theoretical_band = metrics_band == theoretical_range
     ) %>%
     dplyr::arrange(Y, X, metrics_sum)
 
@@ -162,7 +198,24 @@ plot_red_4d <- function(
       metrics_sum
     ) %>%
     dplyr::summarise(n_varieties = dplyr::n_distinct(!!v), .groups = "drop") %>%
-    dplyr::mutate(cell_label = 2 * (X + Y)) %>%
+    dplyr::mutate(
+      cell_label = 2 * (X + Y),
+      theoretical_range = dplyr::case_when(
+        cell_label == 4 ~ "4",
+        cell_label >= 5 & cell_label <= 7 ~ "5-7",
+        cell_label >= 8 & cell_label <= 11 ~ "8-11",
+        cell_label >= 12 & cell_label <= 15 ~ "12-15",
+        cell_label == 16 ~ "16"
+      ),
+      metrics_band = dplyr::case_when(
+        metrics_sum == 4 ~ "4",
+        metrics_sum >= 5 & metrics_sum <= 7 ~ "5-7",
+        metrics_sum >= 8 & metrics_sum <= 11 ~ "8-11",
+        metrics_sum >= 12 & metrics_sum <= 15 ~ "12-15",
+        metrics_sum == 16 ~ "16"
+      ),
+      is_in_theoretical_band = metrics_band == theoretical_range
+    ) %>%
     dplyr::arrange(Y, X, metrics_sum, OCF_scale_num, RCF_scale_num, GDF_num, ADF_num)
 
   p <- ggplot2::ggplot(square_summary, ggplot2::aes(x = X, y = Y)) +
@@ -229,7 +282,9 @@ plot_red_4d <- function(
       square_summary = square_summary,
       square_sum_breakdown = square_sum_breakdown,
       square_metric_breakdown = square_metric_breakdown,
-      variety_assignment = variety_assignment
+      variety_assignment = variety_assignment,
+      limiting_metric_table = square_metric_breakdown,
+      limiting_metric_detail = variety_assignment
     ))
   }
 
@@ -237,7 +292,7 @@ plot_red_4d <- function(
 }
 
 # Prevent R CMD check notes for unquoted variables.
-X <- Y <- n <- OCF_scale_num <- RCF_scale_num <- GDF_num <- ADF_num <-
+X <- Y <- n <- n_total <- n_in_band <- OCF_scale_num <- RCF_scale_num <- GDF_num <- ADF_num <-
   metrics_sum <- cell_label <- theoretical_range <- risk_category <-
-  observed_min_sum <- observed_max_sum <- n_varieties <- possible_min_sum <-
-  possible_max_sum <- is_possible_for_square <- NULL
+  metrics_band <- is_in_theoretical_band <- observed_min_sum <- observed_max_sum <-
+  n_varieties <- possible_min_sum <- possible_max_sum <- is_possible_for_square <- NULL

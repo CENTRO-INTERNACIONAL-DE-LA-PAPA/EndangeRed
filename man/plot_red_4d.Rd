@@ -25,7 +25,8 @@ count unique varieties (default: \code{"final_variety_name"}).}
 \item{return_tables}{Logical. If \code{FALSE} (default), returns only the plot.
 If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
 \code{square_sum_breakdown}, \code{square_metric_breakdown}, and
-\code{variety_assignment}.}
+\code{variety_assignment}. For backward compatibility it also includes
+\code{limiting_metric_table} and \code{limiting_metric_detail}.}
 }
 \value{
 A ggplot object, or a list when \code{return_tables = TRUE}.
@@ -39,7 +40,9 @@ X = \code{pmax(GDF_num, RCF_scale_num)} and Y = \code{pmax(OCF_scale_num, ADF_nu
 Tile colors follow the theoretical matrix bands (from \code{cell_label = 2 * (X + Y)}):
 4, 5-7, 8-11, 12-15, and 16.
 
-The plot label shows only unique-variety counts per square (\code{n = ...}).
+The plot label shows strict in-band unique-variety counts per square (\code{n = ...}):
+a variety is counted in a square only if its observed \code{metrics_sum} falls
+inside that square's theoretical band.
 }
 \examples{
 data(Huancavelica_2013)
