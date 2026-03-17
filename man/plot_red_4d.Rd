@@ -7,8 +7,8 @@
 plot_red_4d(
   results,
   variety_col = "final_variety_name",
-  palette = c(`Critically At Risk` = "#D73027", `Highly At Risk` = "#FC8D59", `At Risk` =
-    "#FEE08B", Secure = "#91CF60", `Highly Secure` = "#1A9850")
+  palette = c(`Critically At Risk` = "red", `Highly At Risk` = "orange", `At Risk` =
+    "yellow", Secure = "#8CD665", `Highly Secure` = "#1E7124")
 )
 }
 \arguments{

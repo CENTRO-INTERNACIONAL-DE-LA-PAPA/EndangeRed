@@ -1,9 +1,9 @@
 #' Plot 4D red-listing class combinations as a 2D projected matrix
 #'
-#' Build a 4x4 matrix plot from the output of [get_red_listing()]. This projects 
-#' 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents 
-#' the maximum of `GDF_num` and `RCF_scale_num`, while the Y-axis represents the 
-#' maximum of `OCF_scale_num` and `ADF_num`. Tile fill encodes the combined risk 
+#' Build a 4x4 matrix plot from the output of [get_red_listing()]. This projects
+#' 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
+#' the maximum of `GDF_num` and `RCF_scale_num`, while the Y-axis represents the
+#' maximum of `OCF_scale_num` and `ADF_num`. Tile fill encodes the combined risk
 #' category, while labels show the number of unique varieties in each cell.
 #'
 #' @param results A data frame returned by [get_red_listing()].
@@ -24,13 +24,12 @@ plot_red_4d <- function(
     results,
     variety_col = "final_variety_name",
     palette = c(
-      "Critically At Risk" = "#D73027", # Muted red
-      "Highly At Risk"     = "#FC8D59", # Soft orange
-      "At Risk"            = "#FEE08B", # Warm yellow
-      "Secure"             = "#91CF60", # Light green
-      "Highly Secure"      = "#1A9850"  # Dark green
+      "Critically At Risk" = "red",
+      "Highly At Risk"     = "orange",
+      "At Risk"            = "yellow",
+      "Secure"             = "#8CD665",
+      "Highly Secure"      = "#1E7124"
     )) {
-  
   # 1. Validate required columns
   required_cols <- c(
     variety_col,
@@ -50,7 +49,7 @@ plot_red_4d <- function(
 
   # 2. Validate palette
   expected_palette_names <- c(
-    "Critically At Risk", "Highly At Risk", "At Risk", 
+    "Critically At Risk", "Highly At Risk", "At Risk",
     "Secure", "Highly Secure"
   )
   if (!all(expected_palette_names %in% names(palette))) {
@@ -69,17 +68,14 @@ plot_red_4d <- function(
         X == 2 & Y == 1 ~ 6,
         X == 3 & Y == 1 ~ 8,
         X == 4 & Y == 1 ~ 10,
-        
         X == 1 & Y == 2 ~ 6,
         X == 2 & Y == 2 ~ 8,
         X == 3 & Y == 2 ~ 10,
         X == 4 & Y == 2 ~ 12,
-        
         X == 1 & Y == 3 ~ 8,
         X == 2 & Y == 3 ~ 10,
         X == 3 & Y == 3 ~ 12,
         X == 4 & Y == 3 ~ 14,
-        
         X == 1 & Y == 4 ~ 10,
         X == 2 & Y == 4 ~ 12,
         X == 3 & Y == 4 ~ 14,
@@ -105,14 +101,6 @@ plot_red_4d <- function(
       !is.na(GDF_num),
       !is.na(ADF_num)
     ) %>%
-    # >>> NEW ADDITION: Extract only unique combinations of variety and the 4 risk variables <<<
-    dplyr::distinct(
-      !!v, 
-      OCF_scale_num, 
-      RCF_scale_num, 
-      GDF_num, 
-      ADF_num
-    ) %>%
     dplyr::mutate(
       X = pmax(GDF_num, RCF_scale_num),
       Y = pmax(OCF_scale_num, ADF_num)
@@ -126,47 +114,47 @@ plot_red_4d <- function(
   # 5. Plot the matrix
   ggplot2::ggplot(plot_df, ggplot2::aes(x = X, y = Y)) +
     ggplot2::geom_tile(
-      ggplot2::aes(fill = risk_category), 
-      color = "black", 
+      ggplot2::aes(fill = risk_category),
+      color = "black",
       linewidth = 0.5
     ) +
     # Theoretical grid text (4, 6, 8...) in the bottom right corner
     ggplot2::geom_text(
-      ggplot2::aes(label = cell_label), 
-      hjust = 1, vjust = 0, nudge_x = 0.4, nudge_y = -0.4, 
+      ggplot2::aes(label = cell_label),
+      hjust = 1, vjust = 0, nudge_x = 0.4, nudge_y = -0.4,
       size = 5, color = "black", alpha = 0.6
     ) +
     # Actual unique counts ('n') centered
     ggplot2::geom_text(
-      ggplot2::aes(label = paste0("n = ", n)), 
+      ggplot2::aes(label = paste0("n = ", n)),
       size = 5, fontface = "bold"
     ) +
     ggplot2::scale_fill_manual(
-      values = palette, 
+      values = palette,
       guide = "none",
       drop = FALSE
     ) +
     # Dual axes setup mapped exactly to the image labels
     ggplot2::scale_x_continuous(
-      breaks = 1:4, 
+      breaks = 1:4,
       labels = c("<1%", "1-5%", "5-15%", ">15%"),
-      expand = c(0, 0), 
+      expand = c(0, 0),
       name = "RCF - Frecuencia Relativa del Cultivar",
       sec.axis = ggplot2::sec_axis(
-        transform = ~., 
-        breaks = 1:4, 
+        transform = ~.,
+        breaks = 1:4,
         labels = c("<3km", "3-8km", "8-12km", ">12km"),
         name = "GDF - Frecuencia de Dispersion Geográfica"
       )
     ) +
     ggplot2::scale_y_continuous(
-      breaks = 1:4, 
+      breaks = 1:4,
       labels = c("<10%", "10-30%", "30-50%", ">50%"),
-      expand = c(0, 0), 
+      expand = c(0, 0),
       name = "OCF - Frecuencia General del Cultivar",
       sec.axis = ggplot2::sec_axis(
-        transform = ~., 
-        breaks = 1:4, 
+        transform = ~.,
+        breaks = 1:4,
         labels = c("<200m", "200-350m", "350-500m", ">500m"),
         name = "ADF - Frecuencia de Dispersión Altitudinal"
       )
@@ -186,5 +174,5 @@ plot_red_4d <- function(
 }
 
 # Prevent R CMD check notes for unquoted variables
-X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <- 
+X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <-
   OCF_scale_num <- ADF_num <- NULL
