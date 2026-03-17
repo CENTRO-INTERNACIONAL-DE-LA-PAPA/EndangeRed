@@ -106,7 +106,7 @@ results %>%
 
 ```
 
-We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`, `ADF`).
+We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`, `ADF`)!!
 
 ```{r, fig.width=12, fig.height=9}
 

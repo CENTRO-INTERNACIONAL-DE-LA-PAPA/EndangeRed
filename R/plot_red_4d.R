@@ -173,6 +173,6 @@ plot_red_4d <- function(
     ggplot2::coord_equal()
 }
 
-# Prevent R CMD check notes for unquoted variables
+# Prevent R CMD check notes for unquoted variables.
 X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <-
   OCF_scale_num <- ADF_num <- NULL

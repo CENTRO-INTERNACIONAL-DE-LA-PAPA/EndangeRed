@@ -161,7 +161,7 @@ results %>%
 ```
 
 We can also visualize the 4 risk dimensions (`OCF`, `RCF`, `GDF`,
-`ADF`).
+`ADF`)!!
 
 ``` r
 
