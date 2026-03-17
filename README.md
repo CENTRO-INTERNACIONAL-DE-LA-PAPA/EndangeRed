@@ -178,7 +178,7 @@ You can also return audit tables to track which metric combinations
 red4d_out <- plot_red_4d(results, return_tables = TRUE)
 
 head(red4d_out$square_metric_breakdown)
-#> # A tibble: 6 × 9
+#> # A tibble: 6 × 12
 #>       X     Y OCF_scale_num RCF_scale_num GDF_num ADF_num metrics_sum
 #>   <int> <int>         <int>         <int>   <int>   <int>       <int>
 #> 1     1     1             1             1       1       1           4
@@ -187,7 +187,8 @@ head(red4d_out$square_metric_breakdown)
 #> 4     4     1             1             1       4       1           7
 #> 5     1     2             1             1       1       2           5
 #> 6     2     2             1             1       2       2           6
-#> # ℹ 2 more variables: n_varieties <int>, cell_label <dbl>
+#> # ℹ 5 more variables: n_varieties <int>, cell_label <dbl>,
+#> #   theoretical_range <chr>, metrics_band <chr>, is_in_theoretical_band <lgl>
 ```
 
 And we can summarize unique variety counts per risk category:
