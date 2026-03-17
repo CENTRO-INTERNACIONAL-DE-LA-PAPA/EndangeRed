@@ -24,11 +24,11 @@ plot_red_4d <- function(
     results,
     variety_col = "final_variety_name",
     palette = c(
-      "Critically At Risk" = "red",
-      "Highly At Risk"     = "orange",
-      "At Risk"            = "yellow",
-      "Secure"             = "#8CD665", 
-      "Highly Secure"      = "#1E7124"
+      "Critically At Risk" = "#D73027", # Muted red
+      "Highly At Risk"     = "#FC8D59", # Soft orange
+      "At Risk"            = "#FEE08B", # Warm yellow
+      "Secure"             = "#91CF60", # Light green
+      "Highly Secure"      = "#1A9850"  # Dark green
     )) {
   
   # 1. Validate required columns
@@ -137,30 +137,45 @@ plot_red_4d <- function(
       guide = "none",
       drop = FALSE
     ) +
-    # Dual axes setup
+    # Dual axes setup mapped exactly to the image labels
     ggplot2::scale_x_continuous(
-      breaks = 1:4, expand = c(0, 0), name = "RCF",
-      sec.axis = ggplot2::sec_axis(~., breaks = 1:4, name = "GDF")
+      breaks = 1:4, 
+      labels = c("<1%", "1-5%", "5-15%", ">15%"),
+      expand = c(0, 0), 
+      name = "RCF - Frecuencia Relativa del Cultivar",
+      sec.axis = ggplot2::sec_axis(
+        transform = ~., 
+        breaks = 1:4, 
+        labels = c("<3km", "3-8km", "8-12km", ">12km"),
+        name = "GDF - Frecuencia de Dispersion Geográfica"
+      )
     ) +
     ggplot2::scale_y_continuous(
-      breaks = 1:4, expand = c(0, 0), name = "OCF",
-      sec.axis = ggplot2::sec_axis(~., breaks = 1:4, name = "ADF")
-    ) +
-    ggplot2::labs(
-      title = "4D Red Listing Projected Matrix",
-      subtitle = "Tile count = number of unique varieties (n) mapped to maximum paired scores"
+      breaks = 1:4, 
+      labels = c("<10%", "10-30%", "30-50%", ">50%"),
+      expand = c(0, 0), 
+      name = "OCF - Frecuencia General del Cultivar",
+      sec.axis = ggplot2::sec_axis(
+        transform = ~., 
+        breaks = 1:4, 
+        labels = c("<200m", "200-350m", "350-500m", ">500m"),
+        name = "ADF - Frecuencia de Dispersión Altitudinal"
+      )
     ) +
     ggplot2::theme_minimal(base_size = 11) +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
       axis.title = ggplot2::element_text(size = 12, face = "bold"),
-      axis.text = ggplot2::element_text(size = 11, color = "black"),
+      axis.text.x = ggplot2::element_text(size = 11, color = "black"),
+      # Rotate the Y-axis text 90 degrees to match the image
+      axis.text.y = ggplot2::element_text(size = 11, color = "black", angle = 90, hjust = 0.5),
+      axis.text.y.right = ggplot2::element_text(size = 11, color = "black", angle = 90, hjust = 0.5),
       axis.ticks = ggplot2::element_line(color = "black"),
       axis.ticks.length = ggplot2::unit(0.2, "cm")
     ) +
     ggplot2::coord_equal()
 }
 
-# Prevent R CMD check notes for unquoted variables in dplyr/ggplot pipelines
+# Prevent R CMD check notes for unquoted variables
 X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <- 
   OCF_scale_num <- ADF_num <- NULL
