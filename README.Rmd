@@ -114,14 +114,22 @@ plot_red_4d(results)
 
 ```
 
-You can also return audit tables to track which metric combinations
-(`OCF`, `RCF`, `GDF`, `ADF`) are contributing to each square.
+`plot_red_4d()` uses a strict per-cell filter rule:
+
+- `RCF_scale_num == X`
+- `GDF_num == X`
+- `OCF_scale_num == Y`
+- `ADF_num == Y`
+
+You can return audit tables to inspect exact counts and strict matches.
 
 ```{r}
 
 red4d_out <- plot_red_4d(results, return_tables = TRUE)
 
-head(red4d_out$square_metric_breakdown)
+red4d_out$square_summary %>%
+  dplyr::select(X, Y, n, n_projected, theoretical_range, risk_category) %>%
+  head()
 
 ```
 

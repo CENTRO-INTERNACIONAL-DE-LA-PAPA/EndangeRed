@@ -130,11 +130,17 @@ plot_red_4d <- function(
     dplyr::group_by(X_proj, Y_proj) %>%
     dplyr::summarise(n_projected = dplyr::n_distinct(!!v), .groups = "drop")
 
-  variety_assignment <- variety_base %>%
-    dplyr::filter(
-      RCF_scale_num == GDF_num,
-      OCF_scale_num == ADF_num
-    ) %>%
+  # Explicit 4x4 loop (one filter per matrix cell) following strict user logic.
+  variety_assignment <- purrr::map2_dfr(grid$X, grid$Y, function(x, y) {
+    variety_base %>%
+      dplyr::filter(
+        OCF_scale_num == y,
+        ADF_num == y,
+        RCF_scale_num == x,
+        GDF_num == x
+      ) %>%
+      dplyr::mutate(X = x, Y = y)
+  }) %>%
     dplyr::transmute(
       !!v,
       OCF_scale_num,
@@ -142,8 +148,8 @@ plot_red_4d <- function(
       GDF_num,
       ADF_num,
       metrics_sum,
-      X = RCF_scale_num,
-      Y = OCF_scale_num,
+      X,
+      Y,
       cell_label = 2 * (X + Y),
       theoretical_range = to_band(cell_label),
       metrics_band = to_band(metrics_sum),
@@ -159,6 +165,7 @@ plot_red_4d <- function(
         ordered = TRUE
       )
     ) %>%
+    dplyr::distinct() %>%
     dplyr::ungroup()
 
   assigned_counts <- variety_assignment %>%

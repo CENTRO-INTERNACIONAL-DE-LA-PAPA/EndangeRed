@@ -170,21 +170,31 @@ plot_red_4d(results)
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-You can also return audit tables to track which metric combinations
-(`OCF`, `RCF`, `GDF`, `ADF`) are contributing to each square.
+`plot_red_4d()` uses a strict per-cell filter rule:
+
+- `RCF_scale_num == X`
+- `GDF_num == X`
+- `OCF_scale_num == Y`
+- `ADF_num == Y`
+
+You can return audit tables to inspect exact counts and strict matches.
 
 ``` r
 
 red4d_out <- plot_red_4d(results, return_tables = TRUE)
 
-head(red4d_out$square_metric_breakdown)
-#> # A tibble: 2 × 12
-#>       X     Y OCF_scale_num RCF_scale_num GDF_num ADF_num metrics_sum
-#>   <int> <int>         <int>         <int>   <int>   <int>       <int>
-#> 1     1     1             1             1       1       1           4
-#> 2     4     4             4             4       4       4          16
-#> # ℹ 5 more variables: n_varieties <int>, cell_label <dbl>,
-#> #   theoretical_range <chr>, metrics_band <chr>, is_in_theoretical_band <lgl>
+red4d_out$square_summary %>%
+  dplyr::select(X, Y, n, n_projected, theoretical_range, risk_category) %>%
+  head()
+#> # A tibble: 6 × 6
+#>       X     Y     n n_projected theoretical_range risk_category         
+#>   <int> <int> <int>       <int> <chr>             <ord>                 
+#> 1     1     1    40          40 4                 Critically At Risk    
+#> 2     2     1     0           6 5-7               At Risk               
+#> 3     3     1     0           1 8-11              Potentially Vulnerable
+#> 4     4     1     0           1 8-11              Potentially Vulnerable
+#> 5     1     2     0           4 5-7               At Risk               
+#> 6     2     2     0           6 8-11              Potentially Vulnerable
 ```
 
 And we can summarize unique variety counts per risk category:
