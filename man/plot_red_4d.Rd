@@ -2,12 +2,13 @@
 % Please edit documentation in R/plot_red_4d.R
 \name{plot_red_4d}
 \alias{plot_red_4d}
-\title{Plot 4D red-listing class combinations as faceted heatmap}
+\title{Plot 4D red-listing class combinations as a 2D projected matrix}
 \usage{
 plot_red_4d(
   results,
   variety_col = "final_variety_name",
-  palette = c(Danger = "#EE7733", Transition = "#BBBBBB", Safe = "#0077BB")
+  palette = c(`Critically At Risk` = "red", `Highly At Risk` = "orange", `At Risk` =
+    "yellow", Secure = "#8CD665", `Highly Secure` = "#1E7124")
 )
 }
 \arguments{
@@ -16,18 +17,18 @@ plot_red_4d(
 \item{variety_col}{String. Variety identifier column in \code{results} used to
 count unique varieties (default: \code{"final_variety_name"}).}
 
-\item{palette}{Named character vector with colors for \code{Danger},
-\code{Transition}, and \code{Safe}.}
+\item{palette}{Named character vector with colors for \verb{Critically At Risk},
+\verb{Highly At Risk}, \verb{At Risk}, \code{Secure}, and \verb{Highly Secure}.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Build a 4D matrix plot from the output of \code{\link[=get_red_listing]{get_red_listing()}}. The tile
-matrix shows \code{OCF_scale_num} (x) by \code{RCF_scale_num} (y), and facets by
-\code{GDF_num} (rows) and \code{ADF_num} (columns). Tile fill encodes grouped risk
-zones (Danger, Transition, Safe), while labels show the number of varieties
-in each class combination.
+Build a 4x4 matrix plot from the output of \code{\link[=get_red_listing]{get_red_listing()}}. This projects
+4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents
+the maximum of \code{GDF_num} and \code{RCF_scale_num}, while the Y-axis represents the
+maximum of \code{OCF_scale_num} and \code{ADF_num}. Tile fill encodes the combined risk
+category, while labels show the number of unique varieties in each cell.
 }
 \examples{
 data(Huancavelica_2013)

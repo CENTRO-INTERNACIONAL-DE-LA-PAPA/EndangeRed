@@ -1,16 +1,16 @@
-#' Plot 4D red-listing class combinations as faceted heatmap
+#' Plot 4D red-listing class combinations as a 2D projected matrix
 #'
-#' Build a 4D matrix plot from the output of [get_red_listing()]. The tile
-#' matrix shows `OCF_scale_num` (x) by `RCF_scale_num` (y), and facets by
-#' `GDF_num` (rows) and `ADF_num` (columns). Tile fill encodes grouped risk
-#' zones (Danger, Transition, Safe), while labels show the number of varieties
-#' in each class combination.
+#' Build a 4x4 matrix plot from the output of [get_red_listing()]. This projects 
+#' 4 variables onto a 2D grid by taking the maximum of pairs: X-axis represents 
+#' the maximum of `GDF_num` and `RCF_scale_num`, while the Y-axis represents the 
+#' maximum of `OCF_scale_num` and `ADF_num`. Tile fill encodes the combined risk 
+#' category, while labels show the number of unique varieties in each cell.
 #'
 #' @param results A data frame returned by [get_red_listing()].
 #' @param variety_col String. Variety identifier column in `results` used to
 #'   count unique varieties (default: `"final_variety_name"`).
-#' @param palette Named character vector with colors for `Danger`,
-#'   `Transition`, and `Safe`.
+#' @param palette Named character vector with colors for `Critically At Risk`,
+#'   `Highly At Risk`, `At Risk`, `Secure`, and `Highly Secure`.
 #'
 #' @return A ggplot object.
 #' @export
@@ -24,10 +24,14 @@ plot_red_4d <- function(
     results,
     variety_col = "final_variety_name",
     palette = c(
-      Danger = "#EE7733",
-      Transition = "#d8d8d8ff",
-      Safe = "#0077BB"
+      "Critically At Risk" = "red",
+      "Highly At Risk"     = "orange",
+      "At Risk"            = "yellow",
+      "Secure"             = "#8CD665", 
+      "Highly Secure"      = "#1E7124"
     )) {
+  
+  # 1. Validate required columns
   required_cols <- c(
     variety_col,
     "OCF_scale_num",
@@ -44,7 +48,11 @@ plot_red_4d <- function(
     )
   }
 
-  expected_palette_names <- c("Danger", "Transition", "Safe")
+  # 2. Validate palette
+  expected_palette_names <- c(
+    "Critically At Risk", "Highly At Risk", "At Risk", 
+    "Secure", "Highly Secure"
+  )
   if (!all(expected_palette_names %in% names(palette))) {
     stop(
       "`palette` must be a named vector with names: ",
@@ -53,141 +61,106 @@ plot_red_4d <- function(
     )
   }
 
+  # 3. Create the fixed 4x4 theoretical coordinate grid
+  grid_matrix <- expand.grid(X = 1:4, Y = 1:4) %>%
+    dplyr::mutate(
+      cell_label = dplyr::case_when(
+        X == 1 & Y == 1 ~ 4,
+        X == 2 & Y == 1 ~ 6,
+        X == 3 & Y == 1 ~ 8,
+        X == 4 & Y == 1 ~ 10,
+        
+        X == 1 & Y == 2 ~ 6,
+        X == 2 & Y == 2 ~ 8,
+        X == 3 & Y == 2 ~ 10,
+        X == 4 & Y == 2 ~ 12,
+        
+        X == 1 & Y == 3 ~ 8,
+        X == 2 & Y == 3 ~ 10,
+        X == 3 & Y == 3 ~ 12,
+        X == 4 & Y == 3 ~ 14,
+        
+        X == 1 & Y == 4 ~ 10,
+        X == 2 & Y == 4 ~ 12,
+        X == 3 & Y == 4 ~ 14,
+        X == 4 & Y == 4 ~ 16
+      ),
+      risk_category = dplyr::case_when(
+        cell_label == 4 ~ "Critically At Risk",
+        cell_label == 6 ~ "Highly At Risk",
+        cell_label %in% c(8, 10) ~ "At Risk",
+        cell_label %in% c(12, 14) ~ "Secure",
+        cell_label == 16 ~ "Highly Secure"
+      ),
+      risk_category = factor(risk_category, levels = expected_palette_names)
+    )
+
+  # 4. Process data: Calculate coordinates and count unique varieties
   v <- rlang::sym(variety_col)
 
   plot_df <- results %>%
-    dplyr::distinct(
-      !!v,
-      OCF_scale_num,
-      RCF_scale_num,
-      GDF_num,
-      ADF_num
-    ) %>%
     dplyr::filter(
       !is.na(OCF_scale_num),
       !is.na(RCF_scale_num),
       !is.na(GDF_num),
       !is.na(ADF_num)
     ) %>%
-    dplyr::count(
-      OCF_scale_num,
-      RCF_scale_num,
-      GDF_num,
-      ADF_num,
-      name = "n_varieties"
-    ) %>%
-    tidyr::complete(
-      OCF_scale_num = 1:4,
-      RCF_scale_num = 1:4,
-      GDF_num = 1:4,
-      ADF_num = 1:4,
-      fill = list(n_varieties = 0)
-    ) %>%
     dplyr::mutate(
-      metrics_sum = OCF_scale_num +
-        RCF_scale_num +
-        GDF_num +
-        ADF_num,
-      risk_band = dplyr::case_when(
-        metrics_sum <= 7 ~ "Danger",
-        metrics_sum <= 11 ~ "Transition",
-        TRUE ~ "Safe"
-      ),
-      risk_band = factor(
-        risk_band,
-        levels = c("Danger", "Transition", "Safe")
-      ),
-      OCF_axis = factor(
-        OCF_scale_num,
-        levels = 1:4,
-        labels = c(
-          "1 Very few households",
-          "2 Few households",
-          "3 Many households",
-          "4 Most households"
-        )
-      ),
-      RCF_axis = factor(
-        RCF_scale_num,
-        levels = 1:4,
-        labels = c(
-          "1 Very scarce",
-          "2 Scarce",
-          "3 Common",
-          "4 Abundant"
-        )
-      ),
-      ADF_facet = factor(
-        ADF_num,
-        levels = 1:4,
-        labels = c(
-          "ADF 1 Very narrow altitudinal",
-          "ADF 2 Narrow altitudinal",
-          "ADF 3 Medium altitudinal",
-          "ADF 4 Wide altitudinal"
-        )
-      ),
-      GDF_facet = factor(
-        GDF_num,
-        levels = 4:1,
-        labels = c(
-          "GDF 4 Wide range",
-          "GDF 3 Medium range",
-          "GDF 2 Narrow range",
-          "GDF 1 Very narrow range"
-        )
-      ),
-      label = ifelse(n_varieties == 0, "", n_varieties),
-      txt_col = dplyr::if_else(
-        risk_band == "Safe",
-        "#FFFFFF",
-        "#000000"
-      )
-    )
+      X = pmax(GDF_num, RCF_scale_num),
+      Y = pmax(OCF_scale_num, ADF_num)
+    ) %>%
+    dplyr::group_by(X, Y) %>%
+    dplyr::summarise(n = dplyr::n_distinct(!!v), .groups = "drop") %>%
+    tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0)) %>%
+    dplyr::left_join(grid_matrix, by = c("X", "Y"))
 
-  ggplot2::ggplot(
-    plot_df,
-    ggplot2::aes(
-      x = OCF_axis,
-      y = RCF_axis,
-      fill = risk_band
-    )
-  ) +
-    ggplot2::geom_tile(color = "white", linewidth = 0.25) +
+  # 5. Plot the matrix
+  ggplot2::ggplot(plot_df, ggplot2::aes(x = X, y = Y)) +
+    ggplot2::geom_tile(
+      ggplot2::aes(fill = risk_category), 
+      color = "black", 
+      linewidth = 0.5
+    ) +
+    # Theoretical grid text (4, 6, 8...) in the bottom right corner
     ggplot2::geom_text(
-      ggplot2::aes(
-        label = label,
-        color = txt_col
-      ),
-      size = 2.7,
-      show.legend = FALSE
+      ggplot2::aes(label = cell_label), 
+      hjust = 1, vjust = 0, nudge_x = 0.4, nudge_y = -0.4, 
+      size = 5, color = "black", alpha = 0.6
     ) +
-    ggplot2::scale_color_identity() +
-    ggplot2::facet_grid(
-      rows = ggplot2::vars(GDF_facet),
-      cols = ggplot2::vars(ADF_facet),
-      switch = "both"
+    # Actual unique counts ('n') centered
+    ggplot2::geom_text(
+      ggplot2::aes(label = paste0("n = ", n)), 
+      size = 5, fontface = "bold"
     ) +
-    ggplot2::coord_fixed() +
     ggplot2::scale_fill_manual(
-      values = palette[c("Danger", "Transition", "Safe")],
-      name = "Risk zone",
+      values = palette, 
+      guide = "none",
       drop = FALSE
     ) +
+    # Dual axes setup
+    ggplot2::scale_x_continuous(
+      breaks = 1:4, expand = c(0, 0), name = "RCF",
+      sec.axis = ggplot2::sec_axis(~., breaks = 1:4, name = "GDF")
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = 1:4, expand = c(0, 0), name = "OCF",
+      sec.axis = ggplot2::sec_axis(~., breaks = 1:4, name = "ADF")
+    ) +
     ggplot2::labs(
-      title = "4D Red Listing Matrix",
-      subtitle = "Tile count = number of varieties in each OCF x RCF x GDF x ADF class combination",
-      x = "OCF class",
-      y = "RCF class"
+      title = "4D Red Listing Projected Matrix",
+      subtitle = "Tile count = number of unique varieties (n) mapped to maximum paired scores"
     ) +
     ggplot2::theme_minimal(base_size = 11) +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
-      strip.placement = "outside",
-      axis.text.x = ggplot2::element_text(angle = 25, hjust = 1),
-      axis.text.y = ggplot2::element_text(size = 9)
-    )
+      axis.title = ggplot2::element_text(size = 12, face = "bold"),
+      axis.text = ggplot2::element_text(size = 11, color = "black"),
+      axis.ticks = ggplot2::element_line(color = "black"),
+      axis.ticks.length = ggplot2::unit(0.2, "cm")
+    ) +
+    ggplot2::coord_equal()
 }
 
-ADF_facet <- GDF_facet <- OCF_axis <- RCF_axis <- label <- metrics_sum <-
-  n_varieties <- risk_band <- txt_col <- NULL
+# Prevent R CMD check notes for unquoted variables in dplyr/ggplot pipelines
+X <- Y <- cell_label <- risk_category <- n <- GDF_num <- RCF_scale_num <- 
+  OCF_scale_num <- ADF_num <- NULL
