@@ -24,11 +24,11 @@ plot_red_4d <- function(
     results,
     variety_col = "final_variety_name",
     palette = c(
-      "Critically At Risk" = "red",
-      "Highly At Risk"     = "orange",
-      "At Risk"            = "yellow",
-      "Secure"             = "#8CD665", 
-      "Highly Secure"      = "#1E7124"
+      "Critically At Risk" = "#D73027", # Muted red
+      "Highly At Risk"     = "#FC8D59", # Soft orange
+      "At Risk"            = "#FEE08B", # Warm yellow
+      "Secure"             = "#91CF60", # Light green
+      "Highly Secure"      = "#1A9850"  # Dark green
     )) {
   
   # 1. Validate required columns
@@ -105,11 +105,20 @@ plot_red_4d <- function(
       !is.na(GDF_num),
       !is.na(ADF_num)
     ) %>%
+    # >>> NEW ADDITION: Extract only unique combinations of variety and the 4 risk variables <<<
+    dplyr::distinct(
+      !!v, 
+      OCF_scale_num, 
+      RCF_scale_num, 
+      GDF_num, 
+      ADF_num
+    ) %>%
     dplyr::mutate(
       X = pmax(GDF_num, RCF_scale_num),
       Y = pmax(OCF_scale_num, ADF_num)
     ) %>%
     dplyr::group_by(X, Y) %>%
+    # Count the unique varieties per coordinate cell
     dplyr::summarise(n = dplyr::n_distinct(!!v), .groups = "drop") %>%
     tidyr::complete(X = 1:4, Y = 1:4, fill = list(n = 0)) %>%
     dplyr::left_join(grid_matrix, by = c("X", "Y"))
