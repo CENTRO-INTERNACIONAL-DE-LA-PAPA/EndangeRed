@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_red_4d.R
 \name{plot_red_4d}
 \alias{plot_red_4d}
-\title{Plot 4D red-listing classes as a 4x4 matrix with strict band assignment}
+\title{Plot 4D red-listing classes as a strict 4x4 matrix}
 \usage{
 plot_red_4d(
   results,
@@ -32,25 +32,20 @@ If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
 A ggplot object, or a list when \code{return_tables = TRUE}.
 }
 \description{
-Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output. Each variety is
-first projected to \verb{(X_proj, Y_proj)} using:
-\code{X_proj = pmax(GDF_num, RCF_scale_num)} and
-\code{Y_proj = pmax(OCF_scale_num, ADF_num)}.
+Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output.
 }
 \details{
-Then, to enforce strict risk-band logic while still plotting all varieties,
-each variety is assigned to exactly one matrix cell whose theoretical band
-matches its observed \code{metrics_sum} band:
+Strict cell filling rule:
+a variety contributes to cell \verb{(X, Y)} only when all of the following hold:
 \itemize{
-\item \code{4}   -> Critically At Risk
-\item \code{5-7} -> At Risk
-\item \code{8-11} -> Potentially Vulnerable
-\item \code{12-15} -> Stable, Low Concern
-\item \code{16} -> Secure
+\item \code{RCF_scale_num == X}
+\item \code{GDF_num == X}
+\item \code{OCF_scale_num == Y}
+\item \code{ADF_num == Y}
 }
 
-When multiple cells are valid for a band, the nearest cell (Manhattan
-distance from the projected point) is chosen.
+Cell colors follow the theoretical matrix bands from \code{cell_label = 2 * (X + Y)}:
+\code{4}, \code{5-7}, \code{8-11}, \code{12-15}, \code{16}.
 }
 \examples{
 data(Huancavelica_2013)
