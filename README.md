@@ -170,31 +170,28 @@ plot_red_4d(results)
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-`plot_red_4d()` uses a strict per-cell filter rule:
+`plot_red_4d()` assigns each variety to one of the 16 theoretical matrix
+scenarios (`X`,`Y`) using all four metrics, constrained by the valid
+`metrics_sum` range of each square (`4`, `5-7`, `8-11`, `12-15`, `16`).
 
-- `RCF_scale_num == X`
-- `GDF_num == X`
-- `OCF_scale_num == Y`
-- `ADF_num == Y`
-
-You can return audit tables to inspect exact counts and strict matches.
+You can return audit tables to inspect per-square counts and assignments.
 
 ``` r
 
 red4d_out <- plot_red_4d(results, return_tables = TRUE)
 
 red4d_out$square_summary %>%
-  dplyr::select(X, Y, n, n_projected, theoretical_range, risk_category) %>%
+  dplyr::select(X, Y, n, theoretical_range, risk_category) %>%
   head()
-#> # A tibble: 6 × 6
-#>       X     Y     n n_projected theoretical_range risk_category         
-#>   <int> <int> <int>       <int> <chr>             <ord>                 
-#> 1     1     1    40          40 4                 Critically At Risk    
-#> 2     2     1     0           6 5-7               At Risk               
-#> 3     3     1     0           1 8-11              Potentially Vulnerable
-#> 4     4     1     0           1 8-11              Potentially Vulnerable
-#> 5     1     2     0           4 5-7               At Risk               
-#> 6     2     2     0           6 8-11              Potentially Vulnerable
+#> # A tibble: 6 × 5
+#>       X     Y     n theoretical_range risk_category         
+#>   <int> <int> <int> <chr>             <ord>                 
+#> 1     1     1    40 4                 Critically At Risk    
+#> 2     2     1     6 5-7               At Risk               
+#> 3     3     1     1 8-11              Potentially Vulnerable
+#> 4     4     1     1 8-11              Potentially Vulnerable
+#> 5     1     2     4 5-7               At Risk               
+#> 6     2     2     6 8-11              Potentially Vulnerable
 ```
 
 And we can summarize unique variety counts per risk category:

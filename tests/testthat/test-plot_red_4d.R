@@ -1,4 +1,4 @@
-test_that("plot_red_4d fills squares using strict equality rule", {
+test_that("plot_red_4d assigns all unique varieties to one matrix cell", {
   data("Huancavelica_2013", package = "EndangeRed")
   results <- get_red_listing(Huancavelica_2013)
 
@@ -7,44 +7,43 @@ test_that("plot_red_4d fills squares using strict equality rule", {
   expect_equal(nrow(out$square_summary), 16L)
 
   manual_total <- results |>
-    dplyr::select(final_variety_name, OCF_scale_num, RCF_scale_num, GDF_num, ADF_num) |>
-    dplyr::distinct() |>
     dplyr::filter(
-      RCF_scale_num == GDF_num,
-      OCF_scale_num == ADF_num
+      !is.na(final_variety_name),
+      !is.na(OCF_scale_num),
+      !is.na(RCF_scale_num),
+      !is.na(GDF_num),
+      !is.na(ADF_num)
     ) |>
     dplyr::summarise(n = dplyr::n_distinct(final_variety_name)) |>
     dplyr::pull(n)
 
   expect_equal(sum(out$square_summary$n), manual_total)
+  expect_equal(
+    out$variety_assignment |>
+      dplyr::count(final_variety_name) |>
+      dplyr::pull(n) |>
+      max(),
+    1L
+  )
 })
 
-test_that("plot_red_4d exact cell counts match explicit filters", {
+test_that("plot_red_4d keeps assignments inside the theoretical range", {
   toy <- data.frame(
-    cu_variety_name = c("a", "b", "c", "d"),
-    OCF_scale_num = c(1L, 4L, 1L, 4L),
-    RCF_scale_num = c(4L, 1L, 4L, 1L),
-    GDF_num = c(4L, 1L, 3L, 1L),
-    ADF_num = c(1L, 4L, 1L, 4L),
+    cu_variety_name = c("a", "b", "c", "d", "e"),
+    OCF_scale_num = c(1L, 4L, 1L, 4L, 2L),
+    RCF_scale_num = c(4L, 1L, 4L, 1L, 2L),
+    GDF_num = c(4L, 1L, 3L, 1L, 2L),
+    ADF_num = c(1L, 4L, 1L, 4L, 2L),
     stringsAsFactors = FALSE
   )
-  # Strict matches:
-  # a -> (X=4,Y=1)
-  # b -> (X=1,Y=4)
-  # c not counted (RCF != GDF)
-  # d -> (X=1,Y=4)
+  toy$metrics_sum <- with(
+    toy,
+    OCF_scale_num + RCF_scale_num + GDF_num + ADF_num
+  )
 
   out <- plot_red_4d(toy, variety_col = "cu_variety_name", return_tables = TRUE)
-  cell_41 <- out$square_summary |>
-    dplyr::filter(X == 4, Y == 1) |>
-    dplyr::pull(n)
-  cell_14 <- out$square_summary |>
-    dplyr::filter(X == 1, Y == 4) |>
-    dplyr::pull(n)
-
-  expect_equal(cell_41, 1L)
-  expect_equal(cell_14, 2L)
-  expect_equal(sum(out$square_summary$n), 3L)
+  expect_true(all(out$variety_assignment$is_in_theoretical_band))
+  expect_equal(sum(out$square_summary$n), dplyr::n_distinct(toy$cu_variety_name))
 })
 
 test_that("plot_red_4d returns expected tables and compatibility aliases", {
@@ -64,7 +63,6 @@ test_that("plot_red_4d returns expected tables and compatibility aliases", {
   expect_equal(nrow(out$square_sum_breakdown), 16L * 13L)
   expect_equal(nrow(out$limiting_metric_table), nrow(out$square_metric_breakdown))
   expect_equal(nrow(out$limiting_metric_detail), nrow(out$variety_assignment))
-
   expect_true(all(out$variety_assignment$is_in_theoretical_band))
 })
 
@@ -77,11 +75,12 @@ test_that("plot_red_4d supports custom variety column names", {
   expect_s3_class(out$plot, "ggplot")
 
   manual_total <- results |>
-    dplyr::select(cu_variety_name, OCF_scale_num, RCF_scale_num, GDF_num, ADF_num) |>
-    dplyr::distinct() |>
     dplyr::filter(
-      RCF_scale_num == GDF_num,
-      OCF_scale_num == ADF_num
+      !is.na(cu_variety_name),
+      !is.na(OCF_scale_num),
+      !is.na(RCF_scale_num),
+      !is.na(GDF_num),
+      !is.na(ADF_num)
     ) |>
     dplyr::summarise(n = dplyr::n_distinct(cu_variety_name)) |>
     dplyr::pull(n)

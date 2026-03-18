@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_red_4d.R
 \name{plot_red_4d}
 \alias{plot_red_4d}
-\title{Plot 4D red-listing classes as a strict 4x4 matrix}
+\title{Plot 4D red-listing classes as a 4x4 matrix}
 \usage{
 plot_red_4d(
   results,
@@ -32,18 +32,19 @@ If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
 A ggplot object, or a list when \code{return_tables = TRUE}.
 }
 \description{
-This implementation follows an explicit per-cell filtering rule.
-For a cell \verb{(X, Y)}, a variety is counted only when:
+This implementation assigns each variety to one of the 16 theoretical
+scenarios \verb{(X, Y)} where the ideal profile is:
 \itemize{
-\item \code{RCF_scale_num == X}
-\item \code{GDF_num == X}
-\item \code{OCF_scale_num == Y}
-\item \code{ADF_num == Y}
+\item \code{RCF_scale_num = X}
+\item \code{GDF_num = X}
+\item \code{OCF_scale_num = Y}
+\item \code{ADF_num = Y}
 }
 }
 \details{
-Cell color/band is theoretical from \code{cell_label = 2 * (X + Y)}:
-\code{4}, \code{5-7}, \code{8-11}, \code{12-15}, \code{16}.
+Assignment is constrained by the theoretical range of each cell
+(\code{4}, \code{5-7}, \code{8-11}, \code{12-15}, \code{16}) and then solved by minimum distance to
+the ideal profile, with deterministic tie-breaking.
 }
 \examples{
 data(Huancavelica_2013)

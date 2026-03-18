@@ -1,14 +1,15 @@
-#' Plot 4D red-listing classes as a strict 4x4 matrix
+#' Plot 4D red-listing classes as a 4x4 matrix
 #'
-#' This implementation follows an explicit per-cell filtering rule.
-#' For a cell `(X, Y)`, a variety is counted only when:
-#' - `RCF_scale_num == X`
-#' - `GDF_num == X`
-#' - `OCF_scale_num == Y`
-#' - `ADF_num == Y`
+#' This implementation assigns each variety to one of the 16 theoretical
+#' scenarios `(X, Y)` where the ideal profile is:
+#' - `RCF_scale_num = X`
+#' - `GDF_num = X`
+#' - `OCF_scale_num = Y`
+#' - `ADF_num = Y`
 #'
-#' Cell color/band is theoretical from `cell_label = 2 * (X + Y)`:
-#' `4`, `5-7`, `8-11`, `12-15`, `16`.
+#' Assignment is constrained by the theoretical range of each cell
+#' (`4`, `5-7`, `8-11`, `12-15`, `16`) and then solved by minimum distance to
+#' the ideal profile, with deterministic tie-breaking.
 #'
 #' @param results A data frame returned by [get_red_listing()].
 #' @param variety_col String. Variety identifier column in `results` used to
@@ -120,26 +121,47 @@ plot_red_4d <- function(
       risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
     )
 
-  # Diagnostic projection counts (not used for strict n)
-  projected_counts <- base_df %>%
-    dplyr::mutate(
-      X_proj = pmax(GDF_num, RCF_scale_num),
-      Y_proj = pmax(OCF_scale_num, ADF_num)
-    ) %>%
-    dplyr::group_by(X_proj, Y_proj) %>%
-    dplyr::summarise(n_projected = dplyr::n_distinct(!!v), .groups = "drop")
+  # Keep one profile per variety for matrix assignment.
+  if (any(duplicated(base_df[[variety_col]]))) {
+    base_df <- base_df %>%
+      dplyr::group_by(!!v) %>%
+      dplyr::arrange(metrics_sum, OCF_scale_num, RCF_scale_num, GDF_num, ADF_num, .by_group = TRUE) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup()
+  }
 
-  # Explicit strict per-cell filtering loop
-  variety_assignment <- purrr::map2_dfr(grid$X, grid$Y, function(x, y) {
-    base_df %>%
-      dplyr::filter(
-        OCF_scale_num == y,
-        ADF_num == y,
-        RCF_scale_num == x,
-        GDF_num == x
-      ) %>%
-      dplyr::mutate(X = x, Y = y)
-  }) %>%
+  variety_assignment <- base_df %>%
+    dplyr::mutate(.row_id = dplyr::row_number()) %>%
+    tidyr::crossing(
+      grid %>%
+        dplyr::select(X, Y, cell_label, theoretical_range, risk_category)
+    ) %>%
+    dplyr::mutate(
+      metrics_band = to_band(metrics_sum),
+      is_in_theoretical_band = metrics_band == theoretical_range,
+      distance = abs(OCF_scale_num - Y) +
+        abs(ADF_num - Y) +
+        abs(RCF_scale_num - X) +
+        abs(GDF_num - X),
+      agreement_count = as.integer(OCF_scale_num == Y) +
+        as.integer(ADF_num == Y) +
+        as.integer(RCF_scale_num == X) +
+        as.integer(GDF_num == X),
+      label_gap = abs(metrics_sum - cell_label)
+    ) %>%
+    dplyr::filter(is_in_theoretical_band) %>%
+    dplyr::group_by(.row_id) %>%
+    dplyr::arrange(
+      distance,
+      dplyr::desc(agreement_count),
+      label_gap,
+      cell_label,
+      Y,
+      X,
+      .by_group = TRUE
+    ) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup() %>%
     dplyr::transmute(
       !!v,
       OCF_scale_num,
@@ -147,25 +169,22 @@ plot_red_4d <- function(
       GDF_num,
       ADF_num,
       metrics_sum,
+      metrics_band,
       X,
       Y,
-      cell_label = 2 * (X + Y),
-      theoretical_range = to_band(cell_label),
-      metrics_band = to_band(metrics_sum),
-      is_in_theoretical_band = metrics_band == theoretical_range,
-      risk_category = factor(
-        band_to_risk(theoretical_range),
-        levels = risk_levels,
-        ordered = TRUE
-      ),
+      cell_label,
+      theoretical_range,
+      is_in_theoretical_band,
+      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE),
       risk_category_observed = factor(
         band_to_risk(metrics_band),
         levels = risk_levels,
         ordered = TRUE
-      )
-    ) %>%
-    dplyr::distinct() %>%
-    dplyr::ungroup()
+      ),
+      distance,
+      agreement_count,
+      label_gap
+    )
 
   assigned_counts <- variety_assignment %>%
     dplyr::group_by(X, Y) %>%
@@ -173,13 +192,8 @@ plot_red_4d <- function(
 
   square_summary <- grid %>%
     dplyr::left_join(assigned_counts, by = c("X", "Y")) %>%
-    dplyr::left_join(
-      projected_counts %>% dplyr::rename(X = X_proj, Y = Y_proj),
-      by = c("X", "Y")
-    ) %>%
     dplyr::mutate(
-      n = dplyr::coalesce(n, 0L),
-      n_projected = dplyr::coalesce(n_projected, 0L)
+      n = dplyr::coalesce(n, 0L)
     ) %>%
     dplyr::arrange(Y, X)
 
@@ -288,6 +302,7 @@ plot_red_4d <- function(
 }
 
 # Prevent R CMD check notes for unquoted variables.
-X <- Y <- X_proj <- Y_proj <- n <- n_projected <- OCF_scale_num <- RCF_scale_num <- NULL
+X <- Y <- n <- OCF_scale_num <- RCF_scale_num <- NULL
 GDF_num <- ADF_num <- metrics_sum <- metrics_band <- risk_category <- risk_category_observed <- NULL
 cell_label <- theoretical_range <- n_varieties <- is_in_theoretical_band <- NULL
+distance <- agreement_count <- label_gap <- NULL
