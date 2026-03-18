@@ -174,7 +174,8 @@ plot_red_4d(results)
 scenarios (`X`,`Y`) using all four metrics, constrained by the valid
 `metrics_sum` range of each square (`4`, `5-7`, `8-11`, `12-15`, `16`).
 
-You can return audit tables to inspect per-square counts and assignments.
+You can return audit tables to inspect per-square counts and
+assignments.
 
 ``` r
 
@@ -187,11 +188,11 @@ red4d_out$square_summary %>%
 #>       X     Y     n theoretical_range risk_category         
 #>   <int> <int> <int> <chr>             <ord>                 
 #> 1     1     1    40 4                 Critically At Risk    
-#> 2     2     1     6 5-7               At Risk               
-#> 3     3     1     1 8-11              Potentially Vulnerable
-#> 4     4     1     1 8-11              Potentially Vulnerable
-#> 5     1     2     4 5-7               At Risk               
-#> 6     2     2     6 8-11              Potentially Vulnerable
+#> 2     2     1    14 5-7               At Risk               
+#> 3     3     1     2 8-11              Potentially Vulnerable
+#> 4     4     1     7 8-11              Potentially Vulnerable
+#> 5     1     2     9 5-7               At Risk               
+#> 6     2     2     2 8-11              Potentially Vulnerable
 ```
 
 And we can summarize unique variety counts per risk category:
