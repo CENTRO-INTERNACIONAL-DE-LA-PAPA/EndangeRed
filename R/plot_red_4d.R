@@ -1,15 +1,13 @@
 #' Plot 4D red-listing classes as a strict 4x4 matrix
 #'
-#' Build a 4x4 matrix plot from [get_red_listing()] output.
-#'
-#' Strict cell filling rule:
-#' a variety contributes to cell `(X, Y)` only when all of the following hold:
+#' This implementation follows an explicit per-cell filtering rule.
+#' For a cell `(X, Y)`, a variety is counted only when:
 #' - `RCF_scale_num == X`
 #' - `GDF_num == X`
 #' - `OCF_scale_num == Y`
 #' - `ADF_num == Y`
 #'
-#' Cell colors follow the theoretical matrix bands from `cell_label = 2 * (X + Y)`:
+#' Cell color/band is theoretical from `cell_label = 2 * (X + Y)`:
 #' `4`, `5-7`, `8-11`, `12-15`, `16`.
 #'
 #' @param results A data frame returned by [get_red_listing()].
@@ -20,8 +18,8 @@
 #' @param return_tables Logical. If `FALSE` (default), returns only the plot.
 #'   If `TRUE`, returns a list with `plot`, `square_summary`,
 #'   `square_sum_breakdown`, `square_metric_breakdown`, and
-#'   `variety_assignment`. For backward compatibility it also includes
-#'   `limiting_metric_table` and `limiting_metric_detail`.
+#'   `variety_assignment`. Backward-compatible aliases
+#'   `limiting_metric_table` and `limiting_metric_detail` are also returned.
 #'
 #' @return A ggplot object, or a list when `return_tables = TRUE`.
 #' @export
@@ -95,15 +93,7 @@ plot_red_4d <- function(
 
   v <- rlang::sym(variety_col)
 
-  grid <- tidyr::expand_grid(X = 1:4, Y = 1:4) %>%
-    dplyr::mutate(
-      cell_label = 2 * (X + Y),
-      theoretical_range = to_band(cell_label),
-      risk_category = band_to_risk(theoretical_range),
-      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
-    )
-
-  variety_base <- results %>%
+  base_df <- results %>%
     dplyr::filter(
       !is.na(!!v),
       !is.na(OCF_scale_num),
@@ -122,7 +112,16 @@ plot_red_4d <- function(
     dplyr::distinct() %>%
     dplyr::ungroup()
 
-  projected_counts <- variety_base %>%
+  grid <- tidyr::expand_grid(X = 1:4, Y = 1:4) %>%
+    dplyr::mutate(
+      cell_label = 2 * (X + Y),
+      theoretical_range = to_band(cell_label),
+      risk_category = band_to_risk(theoretical_range),
+      risk_category = factor(risk_category, levels = risk_levels, ordered = TRUE)
+    )
+
+  # Diagnostic projection counts (not used for strict n)
+  projected_counts <- base_df %>%
     dplyr::mutate(
       X_proj = pmax(GDF_num, RCF_scale_num),
       Y_proj = pmax(OCF_scale_num, ADF_num)
@@ -130,9 +129,9 @@ plot_red_4d <- function(
     dplyr::group_by(X_proj, Y_proj) %>%
     dplyr::summarise(n_projected = dplyr::n_distinct(!!v), .groups = "drop")
 
-  # Explicit 4x4 loop (one filter per matrix cell) following strict user logic.
+  # Explicit strict per-cell filtering loop
   variety_assignment <- purrr::map2_dfr(grid$X, grid$Y, function(x, y) {
-    variety_base %>%
+    base_df %>%
       dplyr::filter(
         OCF_scale_num == y,
         ADF_num == y,

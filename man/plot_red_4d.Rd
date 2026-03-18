@@ -25,26 +25,24 @@ count unique varieties (default: \code{"final_variety_name"}).}
 \item{return_tables}{Logical. If \code{FALSE} (default), returns only the plot.
 If \code{TRUE}, returns a list with \code{plot}, \code{square_summary},
 \code{square_sum_breakdown}, \code{square_metric_breakdown}, and
-\code{variety_assignment}. For backward compatibility it also includes
-\code{limiting_metric_table} and \code{limiting_metric_detail}.}
+\code{variety_assignment}. Backward-compatible aliases
+\code{limiting_metric_table} and \code{limiting_metric_detail} are also returned.}
 }
 \value{
 A ggplot object, or a list when \code{return_tables = TRUE}.
 }
 \description{
-Build a 4x4 matrix plot from \code{\link[=get_red_listing]{get_red_listing()}} output.
-}
-\details{
-Strict cell filling rule:
-a variety contributes to cell \verb{(X, Y)} only when all of the following hold:
+This implementation follows an explicit per-cell filtering rule.
+For a cell \verb{(X, Y)}, a variety is counted only when:
 \itemize{
 \item \code{RCF_scale_num == X}
 \item \code{GDF_num == X}
 \item \code{OCF_scale_num == Y}
 \item \code{ADF_num == Y}
 }
-
-Cell colors follow the theoretical matrix bands from \code{cell_label = 2 * (X + Y)}:
+}
+\details{
+Cell color/band is theoretical from \code{cell_label = 2 * (X + Y)}:
 \code{4}, \code{5-7}, \code{8-11}, \code{12-15}, \code{16}.
 }
 \examples{
