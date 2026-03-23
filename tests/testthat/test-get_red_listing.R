@@ -40,3 +40,22 @@ test_that("calculate_distances errors clearly when coordinate/elevation columns 
     "Missing required columns in `df`"
   )
 })
+
+test_that("calculate_distances handles character elevation with invalid tokens", {
+  toy <- data.frame(
+    long = c(-71.0, -71.1, -71.2),
+    lat = c(-13.0, -13.1, -13.2),
+    altitud = c("4000", "x|", "4020"),
+    stringsAsFactors = FALSE
+  )
+
+  expect_no_error(
+    out <- calculate_distances(
+      toy,
+      coord_names = c("long", "lat"),
+      elevation_name = "altitud"
+    )
+  )
+
+  expect_equal(out$elevation_range, 20)
+})

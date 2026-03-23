@@ -25,6 +25,7 @@ calculate_distances <- function(df, coord_names = c("long", "lat"), elevation_na
   }
 
   calc_elevation_range <- function(x) {
+    x <- suppressWarnings(as.numeric(as.character(x)))
     x <- x[!is.na(x)]
     if (length(x) == 0) {
       return(10)
