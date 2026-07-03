@@ -254,24 +254,24 @@ plot_red_4d <- function(
       breaks = 1:4,
       labels = c("<1%", "1-5%", "5-15%", ">15%"),
       expand = c(0, 0),
-      name = "RCF - Frecuencia Relativa del Cultivar",
+      name = "RCF - Relative Cultivar Frequency",
       sec.axis = ggplot2::sec_axis(
         transform = ~.,
         breaks = 1:4,
         labels = c("<3km", "3-8km", "8-12km", ">12km"),
-        name = "GDF - Frecuencia de Dispersion Geografica"
+        name = "GDF - Geographic Dispersal Frequency"
       )
     ) +
     ggplot2::scale_y_continuous(
       breaks = 1:4,
       labels = c("<10%", "10-30%", "30-50%", ">50%"),
       expand = c(0, 0),
-      name = "OCF - Frecuencia General del Cultivar",
+      name = "OCF - Overall Cultivar Frequency",
       sec.axis = ggplot2::sec_axis(
         transform = ~.,
         breaks = 1:4,
         labels = c("<200m", "200-350m", "350-500m", ">500m"),
-        name = "ADF - Frecuencia de Dispersion Altitudinal"
+        name = "ADF - Altitudinal Dispersal Frequency"
       )
     ) +
     ggplot2::theme_minimal(base_size = 11) +
